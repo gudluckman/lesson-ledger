@@ -18,3 +18,11 @@ export interface StudentProps {
   status: string;
   tutor: string;
 }
+
+export interface StudentFormValues {
+  studentName: string,
+  subject: string,
+  year: string,
+  status: string,
+  baseRate: number | undefined,
+}
