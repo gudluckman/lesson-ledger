@@ -30,6 +30,7 @@ import AllStudents from "pages/all-students";
 import StudentDetails from "pages/student-details";
 import CreateStudent from "pages/create-student";
 import EditStudent from "pages/edit-student";
+import Calendar from "pages/calendar";
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
@@ -138,8 +139,8 @@ function App() {
               icon: <TimelineIcon />,
             },
             {
-              name: "schedule",
-              list: Home,
+              name: "calendar",
+              list: Calendar,
               icon: <CalendarTodayIcon />,
             },
             {
