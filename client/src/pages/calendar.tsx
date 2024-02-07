@@ -1,50 +1,58 @@
-import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Stack,
-  Typography,
-  TextField,
-} from "@mui/material";
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Box, Typography, List, ListItem, ListItemText } from '@mui/material'; // Import Box, Typography, List, and ListItem components from Material-UI
 
-const Calendar = () => {
-  // State to store the fetched events
+const Calendar: React.FC = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Fetch events from the backend route
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('/api/v1/calendar/events');
-        setEvents(response.data); // Update the events state with the fetched data
+        const response = await axios.get('http://localhost:5005/api/v1/calendar/events');
+        setEvents(response.data);
       } catch (error) {
         console.error('Error fetching events:', error);
       }
     };
 
-    fetchEvents(); // Call the fetchEvents function when the component mounts
-  }, []); // Empty dependency array ensures that this effect runs only once
+    fetchEvents();
+  }, []);
+
+  // Function to get the day of the week from a date string
+  const getDayOfWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[date.getDay()];
+  };
+
+  // Function to check if a date falls within the current week (Monday to Sunday)
+  const isCurrentWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay())); // Get Monday of the current week
+    const lastDayOfWeek = new Date(firstDayOfWeek);
+    lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+
+    return date >= firstDayOfWeek && date <= lastDayOfWeek;
+  };
 
   return (
     <Box>
-      <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-        {events.map((day, index) => (
-          <Stack key={index} spacing={2}>
-            <Typography variant="h6">{(day as { day: string, tasks: unknown[] }).day}</Typography>
-            {(day as { day: string, tasks: unknown[] }).tasks.map((task: unknown, taskIndex: React.Key | null | undefined) => (
-              <TextField
-                key={taskIndex}
-                value={task}
-                variant="outlined"
-                fullWidth
-                size="small"
-                InputProps={{
-                  readOnly: true,
-                }}
+      <Typography variant="h4" gutterBottom>
+        Calendar
+      </Typography>
+      <Box>
+        <List>
+          {/* Render list items for each day of the week */}
+          {events.filter((event: any) => isCurrentWeek(event.start.dateTime)).map((event: any) => (
+            <ListItem key={event.id}>
+              <ListItemText
+                primary={event.summary}
+                secondary={getDayOfWeek(event.start.dateTime)}
               />
-            ))}
-          </Stack>
-        ))}
+            </ListItem>
+          ))}
+        </List>
       </Box>
     </Box>
   );
