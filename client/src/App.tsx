@@ -12,8 +12,7 @@ import {
   WalletOutlined,
 } from '@mui/icons-material'
 import TimelineIcon from '@mui/icons-material/Timeline';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import dataProvider from "@pankod/refine-simple-rest";
 import routerProvider from "@pankod/refine-react-router-v6";
 import axios, { AxiosRequestConfig } from "axios";
@@ -21,16 +20,19 @@ import { Title, Sider, Layout, Header } from "components/layout";
 import { ColorModeContextProvider } from "contexts";
 import { CredentialResponse } from "interfaces/google";
 import { parseJwt } from "utils/parse-jwt";
-
 import { 
   Login,
   Home,
 } from "pages";
-import AllStudents from "pages/all-students";
-import StudentDetails from "pages/student-details";
-import CreateStudent from "pages/create-student";
-import EditStudent from "pages/edit-student";
-import Calendar from "pages/calendar";
+import AllStudents from "pages/Students/all-students";
+import StudentDetails from "pages/Students/student-details";
+import CreateStudent from "pages/Students/create-student";
+import EditStudent from "pages/Students/edit-student";
+import LessonSchedule from "pages/LessonSchedule/lesson-schedule";
+import AllEarnings from "pages/Earnings/all-earnings";
+import CreateEarnings from "pages/Earnings/create-earning";
+import EditEarning from "pages/Earnings/edit-earning";
+import EarningDetails from "pages/Earnings/earning-details";
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
@@ -134,19 +136,22 @@ function App() {
               icon: <PeopleAltOutlined />,
             },
             {
-              name: "statistics",
-              list: Home,
-              icon: <TimelineIcon />,
-            },
-            {
-              name: "calendar",
-              list: Calendar,
-              icon: <CalendarTodayIcon />,
+              name: "lessons",
+              list: LessonSchedule,
+              icon: <CalendarMonthIcon />,
             },
             {
               name: "earnings",
-              list: Home,
+              list: AllEarnings,
+              show: EarningDetails,
+              create: CreateEarnings,
+              edit: EditEarning,
               icon: <WalletOutlined />,
+            },
+            {
+              name: "statistics",
+              list: Home,
+              icon: <TimelineIcon />,
             },
           ]}
           Title={Title}

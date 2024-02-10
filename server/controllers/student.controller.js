@@ -19,16 +19,17 @@ const getAllStudents = async (req, res) => {
     query.year = year;
   }
 
+  // Search by subject
   if (subject_like) {
-    query.title = { $regex: subject_like, $options: "i" };
+    query.subject = { $regex: subject_like, $options: "i" };
   }
 
   try {
-    const count = await Student.countDocuments({ query });
+    const count = await Student.countDocuments(query);
 
     const students = await Student.find(query)
-      .limit(_end)
-      .skip(_start)
+      .limit(parseInt(_end))
+      .skip(parseInt(_start))
       .sort({ [_sort]: _order });
 
     res.header("x-total-count", count);

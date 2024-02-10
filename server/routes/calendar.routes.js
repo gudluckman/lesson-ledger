@@ -17,8 +17,6 @@ const calendar = google.calendar({ version: "v3", auth: jwtClient });
 // Route to fetch events from Google Calendar
 router.get("/events", async (req, res) => {
   try {
-    console.log("Request received to fetch events");
-
     // Calculate the start of the current week (Monday)
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1));
@@ -37,8 +35,6 @@ router.get("/events", async (req, res) => {
       singleEvents: true,
       orderBy: "startTime",
     });
-
-    console.log("Events fetched successfully");
 
     const events = response.data.items.filter(event => event.colorId === "1" || event.colorId === "9");
 

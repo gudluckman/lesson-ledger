@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true },
   avatar: { type: String, required: true },
   allStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+  allEarnings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Earning' }],
 });
 
 const userModel = mongoose.model('User', UserSchema);

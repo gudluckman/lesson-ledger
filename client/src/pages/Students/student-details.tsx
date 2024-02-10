@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableRow,
 } from "@mui/material";
+import { Helmet } from "react-helmet";
 import { useDelete, useGetIdentity, useShow } from "@pankod/refine-core";
 import { useParams, useNavigate } from "@pankod/refine-react-router-v6";
 import { ChatBubble, Delete, Edit, Phone } from "@mui/icons-material";
@@ -33,7 +34,7 @@ const StudentDetails = () => {
 
   const isCurrentUser = user.email === studentDetails.tutor.email;
 
-  const formatTime = (time: { split: (arg0: string) => [any, any]; }) => {
+  const formatTime = (time: { split: (arg0: string) => [any, any] }) => {
     const [hour, minute] = time.split(":");
     let period = "AM";
 
@@ -105,6 +106,9 @@ const StudentDetails = () => {
       alignItems="center"
       justifyContent="center"
     >
+      <Helmet>
+        <title>Student Details</title>
+      </Helmet>
       <Box width="80%" maxWidth={1200}>
         <Box borderRadius="15px" padding="20px" bgcolor="#FCFCFC">
           <Typography

@@ -1,6 +1,6 @@
 import { useList } from "@pankod/refine-core";
 import { Typography, Box, Stack } from "@pankod/refine-mui";
-
+import { Helmet } from 'react-helmet';
 import { PieChart, TotalRevenue } from "components";
 import { StudentReferrals } from "components/charts/StudentReferrals";
 import StudentCard from "components/common/StudentCard";
@@ -22,6 +22,9 @@ const Home = () => {
 
   return (
     <Box>
+      <Helmet>
+        <title>Dashboard</title>
+      </Helmet>
       <Typography fontSize={25} fontWeight={700} color="#11142D">
         Dashboard
       </Typography>

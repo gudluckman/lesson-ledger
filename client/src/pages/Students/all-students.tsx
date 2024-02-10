@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Add } from "@mui/icons-material";
 import { useTable } from "@pankod/refine-core";
 import {
@@ -9,6 +8,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import { Helmet } from 'react-helmet';
 import { useNavigate } from '@pankod/refine-react-router-v6';
 import { useMemo } from "react";
 import { CustomButton } from "components";
@@ -53,6 +53,9 @@ const AllStudents = () => {
 
   return (
     <Box>
+      <Helmet>
+        <title>All Students</title>
+      </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
           <Typography fontSize={25} fontWeight={700} color="#11142d">
@@ -141,7 +144,7 @@ const AllStudents = () => {
         <CustomButton
           title="Add Student"
           handleClick={() => navigate("/students/create")}
-          backgroundColor="#475be8"
+          backgroundColor="#7982ff"
           color="#fcfcfc"
           icon={<Add />}
         />

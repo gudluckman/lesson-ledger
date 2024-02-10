@@ -4,3 +4,9 @@ export interface PieChartProps {
     series: Array<number>
     colors: Array<string>
 }
+
+export interface HighlightCardProps {
+    title: string,
+    value: string,
+    backgroundImage: string
+}

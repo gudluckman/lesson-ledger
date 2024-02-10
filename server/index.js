@@ -6,6 +6,7 @@ import connectDB from './mongodb/connect.js';
 import userRouter from './routes/user.routes.js';
 import studentRouter from './routes/student.routes.js';
 import calendarRouter from './routes/calendar.routes.js';
+import earningRouter from './routes/earning.route.js';
 
 dotenv.config();
 
@@ -19,7 +20,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/students', studentRouter);
-app.use('/api/v1/calendar', calendarRouter);
+app.use('/api/v1/lessons', calendarRouter);
+app.use('/api/v1/earnings', earningRouter);
 
 const startServer = async () => {
   try {

@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useLogin } from "@pankod/refine-core";
 import { Container, Box } from "@pankod/refine-mui";
-
-import lesson_ledger from "../assets/lesson-ledger.png";
-
-import { CredentialResponse } from "../interfaces/google";
+import { Helmet } from 'react-helmet';
+import lesson_ledger from "../../assets/lesson-ledger.png";
+import { CredentialResponse } from "../../interfaces/google";
 
 export const Login: React.FC = () => {
   const { mutate: login } = useLogin<CredentialResponse>();
@@ -35,7 +34,7 @@ export const Login: React.FC = () => {
       } catch (error) {
         console.log(error);
       }
-    }, []); // you can also add your client id as dependency here
+    }, []);
 
     return <div ref={divRef} />;
   };
@@ -43,8 +42,11 @@ export const Login: React.FC = () => {
   return (
     <Box
       component="div"
-      sx={{ backgroundColor: '#FCFCFC' }}
+      sx={{ backgroundColor: "#FCFCFC" }}
     >
+      <Helmet>
+        <title>Login</title>
+      </Helmet>
       <Container
         component="main"
         maxWidth="xs"
@@ -63,8 +65,12 @@ export const Login: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <div>
-            <img src={lesson_ledger} alt="Lesson Ledger Logo" />
+          <div style={{ maxWidth: "300px", width: "100%" }}>
+            <img
+              src={lesson_ledger}
+              alt="Lesson Ledger Logo"
+              style={{ width: "100%" }}
+            />
           </div>
           <Box mt={4}>
             <GoogleButton />
