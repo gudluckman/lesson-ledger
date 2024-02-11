@@ -14,7 +14,9 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { FormPropsStudent } from "interfaces/common";
+import { useNavigate } from "@pankod/refine-react-router-v6";
 import CustomButton from "./CustomButton";
+import CancelButton from "./CancelButton";
 
 const FormStudent = ({
   type,
@@ -23,6 +25,11 @@ const FormStudent = ({
   formLoading,
   onFinishHandler,
 }: FormPropsStudent) => {
+  const navigate = useNavigate();
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
   return (
     <Box>
       <Typography fontSize={25} fontWeight={700} color="#11142d">
@@ -483,12 +490,22 @@ const FormStudent = ({
               {...register("source", { required: true })}
             />
           </FormControl>
-          <CustomButton
-            type="submit"
-            title={formLoading ? "Submitting..." : "Submit"}
-            backgroundColor="#475be8"
-            color="#fcfcfc"
-          />
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+            <CancelButton
+              type="button"
+              onClick={handleCancel}
+              title="Cancel"
+              variant="contained"
+              color="info"
+              sx={{ mr: 1 }}
+            />
+            <CustomButton
+              type="submit"
+              title={formLoading ? "Submitting..." : "Submit"}
+              backgroundColor="#475be8"
+              color="#fcfcfc"
+            />
+          </Box>
         </form>
       </Box>
     </Box>

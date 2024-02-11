@@ -1,7 +1,8 @@
-import { useState } from "react"; 
+import { useState } from "react";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
 import { useTable } from "@pankod/refine-core";
+import { styled } from '@mui/system';
 import { CustomButton } from "components";
 import {
   Box,
@@ -20,24 +21,18 @@ import moneyBackground from "assets/money_bg.png";
 import clockBackground from "assets/clock_bg.png";
 import coinBackground from "assets/coin_bg.png";
 
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  backgroundColor: '#989ea4',
+  borderRadius: '20px', 
+}));
+
 const AllEarnings = () => {
   const navigate = useNavigate();
   const {
     tableQueryResult: { data, isLoading, isError },
-    sorter,
-    setSorter,
   } = useTable();
 
   const allEarnings = data?.data ?? [];
-  const currentWeeklyIncome = sorter.find(
-    (item) => item.field === "weeklyHours"
-  )?.order;
-
-  const toggleSort = (field: string) => {
-    setSorter([
-      { field, order: currentWeeklyIncome === "asc" ? "desc" : "asc" },
-    ]);
-  };
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
@@ -46,6 +41,7 @@ const AllEarnings = () => {
   const endIndex = currentPage * pageSize;
 
   const earningsToShow = allEarnings.slice(startIndex, endIndex);
+  const reversedEarningsToShow = [...earningsToShow].reverse();
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Error...</Typography>;
@@ -66,11 +62,13 @@ const AllEarnings = () => {
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
           <Typography fontSize={25} fontWeight={700} color="#11142d">
-            {allEarnings.length ? "All Earnings (Year 2024)" : "There are no earnings"}
+            {allEarnings.length
+              ? "All Earnings (Year 2024)"
+              : "There are no earnings"}
           </Typography>
           <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
             <HighlightCard
-              title="Total Earning"
+              title="Total Earnings"
               value={`$${totalEarnings.toFixed(2)}`}
               backgroundImage={moneyBackground}
             />
@@ -104,15 +102,8 @@ const AllEarnings = () => {
                 width="100%"
                 justifyContent="space-between"
                 gap={2}
+                mt={2}
               >
-                <CustomButton
-                  title={`Sort by income ${
-                    currentWeeklyIncome === "asc" ? "↑" : "↓"
-                  }`}
-                  handleClick={() => toggleSort("weeklyHours")}
-                  backgroundColor="#475be8"
-                  color="#fcfcfc"
-                />
                 <CustomButton
                   title="Add Earning"
                   handleClick={() => navigate("/earnings/create")}
@@ -136,21 +127,34 @@ const AllEarnings = () => {
                 padding: "15px",
               }}
             >
-              <TableRow>
-                <TableCell align="center">
-                  <Typography variant="subtitle1">Start Date</Typography>
+              <StyledTableRow>
+                <TableCell
+                  align="center"
+                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                >
+                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Start Date</Typography>
                 </TableCell>
-                <TableCell align="center">
-                  <Typography variant="subtitle1">End Date</Typography>
+                <TableCell
+                  align="center"
+                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                >
+                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">End Date</Typography>
                 </TableCell>
-                <TableCell align="center">
-                  <Typography variant="subtitle1">Weekly Hours</Typography>
+                <TableCell
+                  align="center"
+                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                >
+                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Weekly Hours</Typography>
                 </TableCell>
-                <TableCell align="center">
-                  <Typography variant="subtitle1">Weekly Income</Typography>
+                <TableCell
+                  align="center"
+                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                >
+                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Weekly Income</Typography>
                 </TableCell>
-              </TableRow>
-              {earningsToShow.map((earning) => (
+              </StyledTableRow>
+
+              {reversedEarningsToShow.map((earning) => (
                 <TableRow key={earning._id}>
                   <TableCell align="center">
                     {format(new Date(earning.startDateOfWeek), "dd/MM/yyyy")}

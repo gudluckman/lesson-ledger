@@ -17,7 +17,7 @@ const CreateEarnings = () => {
   return (
     <div>
       <Helmet>
-        <title>Create Student</title>
+        <title>Create an Earning</title>
       </Helmet>
       <FormEarning
         type="Create"

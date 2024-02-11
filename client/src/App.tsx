@@ -31,8 +31,6 @@ import EditStudent from "pages/Students/edit-student";
 import LessonSchedule from "pages/LessonSchedule/lesson-schedule";
 import AllEarnings from "pages/Earnings/all-earnings";
 import CreateEarnings from "pages/Earnings/create-earning";
-import EditEarning from "pages/Earnings/edit-earning";
-import EarningDetails from "pages/Earnings/earning-details";
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
@@ -143,9 +141,7 @@ function App() {
             {
               name: "earnings",
               list: AllEarnings,
-              show: EarningDetails,
               create: CreateEarnings,
-              edit: EditEarning,
               icon: <WalletOutlined />,
             },
             {
