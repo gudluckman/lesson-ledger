@@ -20,10 +20,12 @@ const Home = () => {
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Something went wrong!</Typography>;
 
-  const weeklyIncomeSum = localStorage.getItem("weeklyIncomeSum");
-  const weeklyHours = localStorage.getItem("weeklyHours");
-  const averageHourlyRate = localStorage.getItem("averageHourlyRate");
-  const weeklyStudents = localStorage.getItem("weeklyStudents");
+  const currentWeeklyIncomeSum = localStorage.getItem("currentWeeklyIncomeSum");
+  const currentWeeklyHours = localStorage.getItem("currentWeeklyHours");
+  const currentAverageHourlyRate = localStorage.getItem(
+    "currentAverageHourlyRate"
+  );
+  const currentWeeklyStudents = localStorage.getItem("currentWeeklyStudents");
 
   // Targets for chart
   const targetWeeklyIncome = 1000;
@@ -43,39 +45,39 @@ const Home = () => {
       <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
         <PieChart
           title="Weekly Earning"
-          value={`$${parseFloat(weeklyIncomeSum ?? "0").toString()}`}
+          value={`$${parseFloat(currentWeeklyIncomeSum ?? "0").toString()}`}
           series={[
-            parseFloat(weeklyIncomeSum ?? "0"),
-            targetWeeklyIncome - parseFloat(weeklyIncomeSum ?? "0"),
+            parseFloat(currentWeeklyIncomeSum ?? "0"),
+            targetWeeklyIncome - parseFloat(currentWeeklyIncomeSum ?? "0"),
           ]}
           colors={["#275be8", "#c4e8ef"]}
         />
 
         <PieChart
           title="Weekly Hours"
-          value={weeklyHours ?? "0"}
+          value={currentWeeklyHours ?? "0"}
           series={[
-            parseFloat(weeklyHours ?? "0"),
-            targetWeeklyHours - parseFloat(weeklyHours ?? "0"),
-          ]}
-          colors={["#275be8", "#c4e8ef"]}
-        />
-
-        <PieChart
-          title="Weekly Hourly Rate"
-          value={`$${parseFloat(averageHourlyRate ?? "0").toFixed(2)}`}
-          series={[
-            parseFloat(averageHourlyRate ?? "0"),
-            targetAverageHourlyRate - parseFloat(averageHourlyRate ?? "0"),
+            parseFloat(currentWeeklyHours ?? "0"),
+            targetWeeklyHours - parseFloat(currentWeeklyHours ?? "0"),
           ]}
           colors={["#275be8", "#c4e8ef"]}
         />
         <PieChart
           title="Weekly Students"
-          value={weeklyStudents ?? "0"}
+          value={currentWeeklyStudents ?? "0"}
           series={[
-            parseFloat(weeklyStudents ?? "0"),
-            targetWeeklyStudents - parseFloat(weeklyStudents ?? "0"),
+            parseFloat(currentWeeklyStudents ?? "0"),
+            targetWeeklyStudents - parseFloat(currentWeeklyStudents ?? "0"),
+          ]}
+          colors={["#275be8", "#c4e8ef"]}
+        />
+        <PieChart
+          title="Weekly Hourly Rate"
+          value={`$${parseFloat(currentAverageHourlyRate ?? "0").toFixed(2)}`}
+          series={[
+            parseFloat(currentAverageHourlyRate ?? "0"),
+            targetAverageHourlyRate -
+              parseFloat(currentAverageHourlyRate ?? "0"),
           ]}
           colors={["#275be8", "#c4e8ef"]}
         />

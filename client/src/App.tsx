@@ -31,6 +31,7 @@ import EditStudent from "pages/Students/edit-student";
 import LessonSchedule from "pages/LessonSchedule/lesson-schedule";
 import AllEarnings from "pages/Earnings/all-earnings";
 import CreateEarnings from "pages/Earnings/create-earning";
+import Statistics from "pages/Statistics/statistics";
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
@@ -126,17 +127,17 @@ function App() {
           catchAll={<ErrorComponent />}
           resources={[
             {
+              name: "lessons",
+              list: LessonSchedule,
+              icon: <CalendarMonthIcon />,
+            },
+            {
               name: "students",
               list: AllStudents,
               show: StudentDetails,
               create: CreateStudent,
               edit: EditStudent,
               icon: <PeopleAltOutlined />,
-            },
-            {
-              name: "lessons",
-              list: LessonSchedule,
-              icon: <CalendarMonthIcon />,
             },
             {
               name: "earnings",
@@ -146,7 +147,7 @@ function App() {
             },
             {
               name: "statistics",
-              list: Home,
+              list: Statistics,
               icon: <TimelineIcon />,
             },
           ]}

@@ -46,7 +46,6 @@ const LessonSchedule: React.FC = () => {
   useEffect(() => {
     let totalSum = 0;
     let totalHours = 0;
-    // let averageHourlyRate = 0;
     let eventCount = 0;
 
     events.forEach((event: any) => {
@@ -70,13 +69,13 @@ const LessonSchedule: React.FC = () => {
     });
     // averageHourlyRate = totalSum / totalHours;
 
-    localStorage.setItem("weeklyIncomeSum", totalSum.toString());
-    localStorage.setItem("weeklyHours", totalHours.toString());
+    localStorage.setItem("currentWeeklyIncomeSum", totalSum.toString());
+    localStorage.setItem("currentWeeklyHours", totalHours.toString());
     localStorage.setItem(
-      "averageHourlyRate",
+      "currentAverageHourlyRate",
       (totalSum / totalHours).toString()
     );
-    localStorage.setItem("weeklyStudents", eventCount.toString());
+    localStorage.setItem("currentWeeklyStudents", eventCount.toString());
   }, [events]);
 
   const getDayOfWeek = (dateString: string) => {
