@@ -1,6 +1,6 @@
 import { useList } from "@pankod/refine-core";
 import { Typography, Box, Stack } from "@pankod/refine-mui";
-import { Helmet } from 'react-helmet';
+import { Helmet } from "react-helmet";
 import { PieChart, TotalRevenue } from "components";
 import { StudentReferrals } from "components/charts/StudentReferrals";
 import StudentCard from "components/common/StudentCard";
@@ -20,6 +20,17 @@ const Home = () => {
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Something went wrong!</Typography>;
 
+  const weeklyIncomeSum = localStorage.getItem("weeklyIncomeSum");
+  const weeklyHours = localStorage.getItem("weeklyHours");
+  const averageHourlyRate = localStorage.getItem("averageHourlyRate");
+  const weeklyStudents = localStorage.getItem("weeklyStudents");
+
+  // Targets for chart
+  const targetWeeklyIncome = 1000;
+  const targetWeeklyHours = 20;
+  const targetAverageHourlyRate = 70;
+  const targetWeeklyStudents = 25;
+
   return (
     <Box>
       <Helmet>
@@ -32,26 +43,40 @@ const Home = () => {
       <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
         <PieChart
           title="Weekly Earning"
-          value="$490"
-          series={[75, 25]}
+          value={`$${parseFloat(weeklyIncomeSum ?? "0").toString()}`}
+          series={[
+            parseFloat(weeklyIncomeSum ?? "0"),
+            targetWeeklyIncome - parseFloat(weeklyIncomeSum ?? "0"),
+          ]}
           colors={["#275be8", "#c4e8ef"]}
         />
+
         <PieChart
           title="Weekly Hours"
-          value="9"
-          series={[75, 25]}
+          value={weeklyHours ?? "0"}
+          series={[
+            parseFloat(weeklyHours ?? "0"),
+            targetWeeklyHours - parseFloat(weeklyHours ?? "0"),
+          ]}
           colors={["#275be8", "#c4e8ef"]}
         />
+
         <PieChart
           title="Weekly Hourly Rate"
-          value="$61.11"
-          series={[75, 25]}
+          value={`$${parseFloat(averageHourlyRate ?? "0").toFixed(2)}`}
+          series={[
+            parseFloat(averageHourlyRate ?? "0"),
+            targetAverageHourlyRate - parseFloat(averageHourlyRate ?? "0"),
+          ]}
           colors={["#275be8", "#c4e8ef"]}
         />
         <PieChart
           title="Weekly Students"
-          value="8"
-          series={[75, 25]}
+          value={weeklyStudents ?? "0"}
+          series={[
+            parseFloat(weeklyStudents ?? "0"),
+            targetWeeklyStudents - parseFloat(weeklyStudents ?? "0"),
+          ]}
           colors={["#275be8", "#c4e8ef"]}
         />
       </Box>

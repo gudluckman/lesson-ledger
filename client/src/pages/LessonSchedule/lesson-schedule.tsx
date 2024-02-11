@@ -20,10 +20,7 @@ import ModeEditIcon from "@mui/icons-material/ModeEdit";
 
 const LessonSchedule: React.FC = () => {
   const [events, setEvents] = useState([]);
-
-  // Loading state
   const [loading, setLoading] = useState(true);
-
   const [currentDay] = useState(
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
   );
@@ -44,6 +41,43 @@ const LessonSchedule: React.FC = () => {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  // To get weekly's lesson detail then display in dashboard via localStorage
+  useEffect(() => {
+    let totalSum = 0;
+    let totalHours = 0;
+    // let averageHourlyRate = 0;
+    let eventCount = 0;
+
+    events.forEach((event: any) => {
+      const regex = /\$(\d+)/g;
+      const matches = event.description.match(regex);
+      if (matches) {
+        matches.forEach((match: any) => {
+          totalSum += parseInt(match.substring(1));
+        });
+      }
+
+      // Calculate duration in hours for each event
+      const start = new Date(event.start.dateTime);
+      const end = new Date(event.end.dateTime);
+      const durationInMs = end.getTime() - start.getTime();
+      const durationInHours = durationInMs / (1000 * 60 * 60);
+      totalHours += durationInHours;
+
+      // Calculate each event
+      eventCount++;
+    });
+    // averageHourlyRate = totalSum / totalHours;
+
+    localStorage.setItem("weeklyIncomeSum", totalSum.toString());
+    localStorage.setItem("weeklyHours", totalHours.toString());
+    localStorage.setItem(
+      "averageHourlyRate",
+      (totalSum / totalHours).toString()
+    );
+    localStorage.setItem("weeklyStudents", eventCount.toString());
+  }, [events]);
 
   const getDayOfWeek = (dateString: string) => {
     const date = new Date(dateString);

@@ -40,7 +40,7 @@ router.get("/events", async (req, res) => {
       startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Go back to Monday of the current week
       startOfWeek.setHours(0, 0, 0, 0); // Set to 00:00:00
-      console.log(`START OF WEEK: ${startOfWeek.getDate()}`);
+      // console.log(`START OF WEEK: ${startOfWeek.getDate()}`);
 
       // console.log(
       //   `Today is not Sunday, so end of week is ${
@@ -50,7 +50,7 @@ router.get("/events", async (req, res) => {
       endOfWeek = new Date(today);
       endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Go forward to Sunday of the current week
       endOfWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
-      console.log(`END OF WEEK: ${endOfWeek.getDate()}`);
+      // console.log(`END OF WEEK: ${endOfWeek.getDate()}`);
     }
 
     // console.log(
