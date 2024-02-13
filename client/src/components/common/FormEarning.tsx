@@ -24,7 +24,7 @@ const FormEarning = ({
   const handleCancel = () => {
     navigate(-1);
   };
-
+  
   return (
     <Box>
       <Typography fontSize={25} fontWeight={700} color="#11142d">

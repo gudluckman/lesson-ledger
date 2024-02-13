@@ -127,11 +127,6 @@ function App() {
           catchAll={<ErrorComponent />}
           resources={[
             {
-              name: "lessons",
-              list: LessonSchedule,
-              icon: <CalendarMonthIcon />,
-            },
-            {
               name: "students",
               list: AllStudents,
               show: StudentDetails,
@@ -149,6 +144,11 @@ function App() {
               name: "statistics",
               list: Statistics,
               icon: <TimelineIcon />,
+            },
+            {
+              name: "lessons",
+              list: LessonSchedule,
+              icon: <CalendarMonthIcon />,
             },
           ]}
           Title={Title}

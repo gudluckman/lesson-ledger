@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
 import { useTable } from "@pankod/refine-core";
-import { styled } from '@mui/system';
+import { styled } from "@mui/system";
 import { CustomButton } from "components";
 import {
   Box,
@@ -22,8 +22,8 @@ import clockBackground from "assets/clock_bg.png";
 import coinBackground from "assets/coin_bg.png";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  backgroundColor: '#989ea4',
-  borderRadius: '20px', 
+  backgroundColor: "#989ea4",
+  borderRadius: "20px",
 }));
 
 const AllEarnings = () => {
@@ -48,10 +48,50 @@ const AllEarnings = () => {
 
   let totalEarnings = 0;
   let totalHours = 0;
-  allEarnings.forEach((earning) => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const monthlyEarnings: { [key: string]: number } = {};
+
+  let earningsForMonth = 0;
+  allEarnings.forEach((earning, index) => {
+    // Accumulate earnings and hours for each month
+    earningsForMonth += Number(earning.weeklyIncome);
+
+    // Check if we've reached the end of a month (every 4 weeks or end of array)
+    if ((index + 1) % 4 === 0 || index === allEarnings.length - 1) {
+      const monthIndex = Math.floor(index / 4); // Determine the month index
+      const monthName = months[monthIndex]; // Get the month name
+
+      // Store the accumulated earnings for the month
+      if (!monthlyEarnings[monthName]) {
+        monthlyEarnings[monthName] = 0;
+      }
+      monthlyEarnings[monthName] += earningsForMonth;
+
+      // Reset earningsForMonth for the next month
+      earningsForMonth = 0;
+    }
+    
     totalEarnings += Number(earning.weeklyIncome);
     totalHours += Number(earning.weeklyHours);
   });
+  localStorage.setItem("totalRevenue", totalEarnings.toString());
+  Object.keys(monthlyEarnings).forEach((month) => {
+    localStorage.setItem(month, monthlyEarnings[month].toString());
+  });
+
   const averageHourlyRate = totalEarnings / totalHours;
 
   return (
@@ -132,25 +172,49 @@ const AllEarnings = () => {
                   align="center"
                   style={{ fontWeight: "bold", textTransform: "uppercase" }}
                 >
-                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Start Date</Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    color="#f8f9fa"
+                  >
+                    Start Date
+                  </Typography>
                 </TableCell>
                 <TableCell
                   align="center"
                   style={{ fontWeight: "bold", textTransform: "uppercase" }}
                 >
-                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">End Date</Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    color="#f8f9fa"
+                  >
+                    End Date
+                  </Typography>
                 </TableCell>
                 <TableCell
                   align="center"
                   style={{ fontWeight: "bold", textTransform: "uppercase" }}
                 >
-                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Weekly Hours</Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    color="#f8f9fa"
+                  >
+                    Weekly Hours
+                  </Typography>
                 </TableCell>
                 <TableCell
                   align="center"
                   style={{ fontWeight: "bold", textTransform: "uppercase" }}
                 >
-                  <Typography variant="subtitle1" fontWeight={700} color="#f8f9fa">Weekly Income</Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    color="#f8f9fa"
+                  >
+                    Weekly Income
+                  </Typography>
                 </TableCell>
               </StyledTableRow>
 

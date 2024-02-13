@@ -64,7 +64,7 @@ const StudentDetails = () => {
       { label: "Lesson status", value: studentDetails.status },
       { label: "Session type", value: studentDetails.sessionType },
       { label: "Session mode", value: studentDetails.sessionMode },
-      { label: "Source", value: studentDetails.source },
+      // { label: "Source", value: studentDetails.source },
     ];
 
     return fields.map((field, index) => (

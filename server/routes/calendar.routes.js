@@ -64,7 +64,7 @@ router.get("/events", async (req, res) => {
       calendarId: process.env.CALENDAR_ID,
       timeMin: startOfWeek.toISOString(),
       timeMax: endOfWeek.toISOString(),
-      maxResults: 20,
+      maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
     });

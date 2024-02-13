@@ -1,29 +1,29 @@
-import { ApexOptions } from 'apexcharts';
+import { ApexOptions } from "apexcharts";
 
 export const TotalRevenueSeries = [
   {
-    name: 'Last Month',
-    data: [183, 124, 115, 85, 143, 143, 96],
+    name: "2024",
+    data: [2085, 2190, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   },
   {
-    name: 'Running Month',
-    data: [95, 84, 72, 44, 108, 108, 47],
+    name: "2023",
+    data: [300, 300, 385, 410, 420, 721.50, 1050.5, 1073.5, 2345, 2016, 1237, 1360],
   },
 ];
 
 export const TotalRevenueOptions: ApexOptions = {
   chart: {
-    type: 'bar',
+    type: "bar",
     toolbar: {
       show: false,
     },
   },
-  colors: ['#475BE8', '#CFC8FF'],
+  colors: ["#475BE8", "#CFC8FF"],
   plotOptions: {
     bar: {
       borderRadius: 4,
       horizontal: false,
-      columnWidth: '55%',
+      columnWidth: "55%",
     },
   },
   dataLabels: {
@@ -33,23 +33,36 @@ export const TotalRevenueOptions: ApexOptions = {
     show: false,
   },
   stroke: {
-    colors: ['transparent'],
+    colors: ["transparent"],
     width: 4,
   },
   xaxis: {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    categories: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
   },
   yaxis: {
     title: {
-      text: '$ (thousands)',
+      text: "$ (thousands)",
     },
   },
   fill: {
     opacity: 1,
   },
   legend: {
-    position: 'top',
-    horizontalAlign: 'right',
+    position: "top",
+    horizontalAlign: "right",
   },
   tooltip: {
     y: {
