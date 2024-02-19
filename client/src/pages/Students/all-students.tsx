@@ -28,7 +28,7 @@ const AllStudents = () => {
     filters,
     setFilters,
   } = useTable();
-
+  
   const allStudents = data?.data ?? [];
 
   const currentBaseRate = sorter.find(

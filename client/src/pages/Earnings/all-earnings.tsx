@@ -28,6 +28,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const AllEarnings = () => {
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
   const {
     tableQueryResult: { data, isLoading, isError },
   } = useTable();
@@ -37,61 +38,30 @@ const AllEarnings = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
 
+  // Reverse the data array initially
+  const reversedAllEarnings = [...allEarnings].reverse();
+
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = currentPage * pageSize;
 
-  const earningsToShow = allEarnings.slice(startIndex, endIndex);
-  const reversedEarningsToShow = [...earningsToShow].reverse();
+  const earningsToShow = reversedAllEarnings.slice(startIndex, endIndex);
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Error...</Typography>;
 
+  //
+  // Start here to extract details for dashboard
+  //
   let totalEarnings = 0;
   let totalHours = 0;
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const monthlyEarnings: { [key: string]: number } = {};
 
-  let earningsForMonth = 0;
-  allEarnings.forEach((earning, index) => {
-    // Accumulate earnings and hours for each month
-    earningsForMonth += Number(earning.weeklyIncome);
-
-    // Check if we've reached the end of a month (every 4 weeks or end of array)
-    if ((index + 1) % 4 === 0 || index === allEarnings.length - 1) {
-      const monthIndex = Math.floor(index / 4); // Determine the month index
-      const monthName = months[monthIndex]; // Get the month name
-
-      // Store the accumulated earnings for the month
-      if (!monthlyEarnings[monthName]) {
-        monthlyEarnings[monthName] = 0;
-      }
-      monthlyEarnings[monthName] += earningsForMonth;
-
-      // Reset earningsForMonth for the next month
-      earningsForMonth = 0;
-    }
-    
+  reversedAllEarnings.forEach((earning, index) => {
     totalEarnings += Number(earning.weeklyIncome);
     totalHours += Number(earning.weeklyHours);
   });
-  localStorage.setItem("totalRevenue", totalEarnings.toString());
-  Object.keys(monthlyEarnings).forEach((month) => {
-    localStorage.setItem(month, monthlyEarnings[month].toString());
-  });
 
+  // Storing total earnings and monthly earnings in localStorage
+  localStorage.setItem("totalRevenue", totalEarnings.toString());
   const averageHourlyRate = totalEarnings / totalHours;
 
   return (
@@ -103,7 +73,7 @@ const AllEarnings = () => {
         <Stack direction="column" width="100%">
           <Typography fontSize={25} fontWeight={700} color="#11142d">
             {allEarnings.length
-              ? "All Earnings (Year 2024)"
+              ? `All Earnings (${currentYear})`
               : "There are no earnings"}
           </Typography>
           <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
@@ -218,7 +188,7 @@ const AllEarnings = () => {
                 </TableCell>
               </StyledTableRow>
 
-              {reversedEarningsToShow.map((earning) => (
+              {earningsToShow.map((earning) => (
                 <TableRow key={earning._id}>
                   <TableCell align="center">
                     {format(new Date(earning.startDateOfWeek), "dd/MM/yyyy")}
@@ -263,16 +233,18 @@ const AllEarnings = () => {
           </Typography>
           {/* Next button */}
           <button
-            disabled={endIndex >= allEarnings.length}
+            disabled={endIndex >= reversedAllEarnings.length}
             onClick={() => setCurrentPage(currentPage + 1)}
             style={{
               padding: "8px 16px",
               borderRadius: "5px",
               backgroundColor:
-                endIndex >= allEarnings.length ? "#ccc" : "#475be8",
+                endIndex >= reversedAllEarnings.length ? "#ccc" : "#475be8",
               color: "#fff",
               cursor:
-                endIndex >= allEarnings.length ? "not-allowed" : "pointer",
+                endIndex >= reversedAllEarnings.length
+                  ? "not-allowed"
+                  : "pointer",
               outline: "none",
               border: "none",
             }}

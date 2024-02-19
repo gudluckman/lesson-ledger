@@ -20,11 +20,11 @@ const FormEarning = ({
   onFinishHandler,
 }: FormPropsStudent) => {
   const navigate = useNavigate();
-
+  
   const handleCancel = () => {
     navigate(-1);
   };
-  
+
   return (
     <Box>
       <Typography fontSize={25} fontWeight={700} color="#11142d">
@@ -61,6 +61,7 @@ const FormEarning = ({
                 type="date"
                 variant="outlined"
                 {...register("startDateOfWeek", { required: true })}
+                defaultValue={localStorage.getItem("currentWeekStartDate") ?? ""}
               />
             </FormControl>
             <FormControl>
@@ -76,6 +77,7 @@ const FormEarning = ({
               </FormHelperText>
               <TextField
                 {...register("endDateOfWeek", { required: true })}
+                defaultValue={localStorage.getItem("currentWeekEndDate") ?? ""}
                 fullWidth
                 required
                 color="info"
@@ -97,6 +99,7 @@ const FormEarning = ({
               </FormHelperText>
               <TextField
                 {...register("weeklyIncome", { required: true })}
+                defaultValue={localStorage.getItem("currentWeeklyIncomeSum") ?? ""}
                 type="number"
                 variant="outlined"
                 color="info"
@@ -120,6 +123,7 @@ const FormEarning = ({
               </FormHelperText>
               <TextField
                 {...register("weeklyHours", { required: true })}
+                defaultValue={localStorage.getItem("currentWeeklyHours") ?? ""}
                 type="number"
                 color="info"
                 variant="outlined"

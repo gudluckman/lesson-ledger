@@ -42,7 +42,7 @@ const LessonSchedule: React.FC = () => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // To get weekly's lesson detail then display in dashboard via localStorage
+  // To get weekly's lesson details then display in dashboard via localStorage
   useEffect(() => {
     let totalSum = 0;
     let totalHours = 0;

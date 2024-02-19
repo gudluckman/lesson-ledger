@@ -46,10 +46,10 @@ const TotalRevenue = () => {
           <ArrowCircleUpRounded sx={{ fontSize: 25, color: "#475be8" }} />
           <Stack>
             <Typography fontSize={15} color="#475be8">
-              0.8%
+              630%
             </Typography>
             <Typography fontSize={12} color="#808191">
-              Than Last Month
+              Than Last Year
             </Typography>
           </Stack>
         </Stack>
