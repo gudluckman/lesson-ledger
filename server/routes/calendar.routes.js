@@ -44,21 +44,23 @@ router.get("/events", async (req, res) => {
 
       // console.log(
       //   `Today is not Sunday, so end of week is ${
-      //     today.getDate() + (6 - today.getDay())
+      //     today.getDate() + (7 - today.getDay())
       //   }`
       // );
       endOfWeek = new Date(today);
-      endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Go forward to Sunday of the current week
+      endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Go forward to Sunday of the current week
       endOfWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
       // console.log(`END OF WEEK: ${endOfWeek.getDate()}`);
     }
 
-    // console.log(
-    //   `Start of the week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
-    // );
-    // console.log(
-    //   `End of the week: ${endOfWeek.toDateString()} ${endOfWeek.toTimeString()}`
-    // );
+    console.log(
+      `Start of the week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
+    );
+    console.log(
+      `End of the week: ${endOfWeek.toDateString()} ${endOfWeek.toTimeString()}`
+    );
+
+    // Store start of the week date in localStorage
 
     const response = await calendar.events.list({
       calendarId: process.env.CALENDAR_ID,

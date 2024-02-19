@@ -7,6 +7,7 @@ import userRouter from './routes/user.routes.js';
 import studentRouter from './routes/student.routes.js';
 import calendarRouter from './routes/calendar.routes.js';
 import earningRouter from './routes/earning.route.js';
+import yearlyEarningRouter from './routes/yearly_earning.route.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/students', studentRouter);
 app.use('/api/v1/lessons', calendarRouter);
 app.use('/api/v1/earnings', earningRouter);
+app.use('/api/v1/yearly-earnings', yearlyEarningRouter);
 
 const startServer = async () => {
   try {

@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String, required: true },
   allStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
   allEarnings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Earning' }],
+  yearlyEarnings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'YearlyEarning' }],
 });
 
 const userModel = mongoose.model('User', UserSchema);

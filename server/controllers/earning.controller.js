@@ -1,5 +1,6 @@
-import Earning from "../mongodb/earning.js";
+import Earning from "../mongodb/models/earning.js";
 import User from "../mongodb/models/user.js";
+import YearlyEarning from "../mongodb/models/yearly_earning.js";
 
 import mongoose from "mongoose";
 
@@ -25,10 +26,32 @@ const getAllEarnings = async (req, res) => {
   }
 };
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 const createEarning = async (req, res) => {
   try {
     const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome, email } =
       req.body;
+
+    // Convert weeklyIncome to a number type
+    const weeklyIncomeNumber = Number(weeklyIncome);
+
+    if (isNaN(weeklyIncomeNumber)) {
+      throw new Error("Weekly income is not a valid number");
+    }
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -40,13 +63,54 @@ const createEarning = async (req, res) => {
       startDateOfWeek,
       endDateOfWeek,
       weeklyHours,
-      weeklyIncome,
+      weeklyIncome: weeklyIncomeNumber,
       tutor: user._id,
     });
 
     user.allEarnings.push(newEarning._id);
     await user.save({ session });
 
+    // Update Monthly and Yearly Earnings
+    const endDate = new Date(endDateOfWeek);
+    const currentYear = endDate.getFullYear().toString();
+    const currentMonth = endDate.getMonth();
+
+    let yearlyEarning = await YearlyEarning.findOne({
+      year: currentYear,
+      tutor: user._id,
+    }).session(session);
+
+    if (!yearlyEarning) {
+      yearlyEarning = await YearlyEarning.create({
+        year: currentYear,
+        monthlyEarnings: [],
+        totalRevenue: weeklyIncomeNumber,
+        tutor: user._id,
+      });
+    }
+
+    // Get the current month's index (0 for January, 1 for February, ...)
+    const currentMonthIndex = currentMonth;
+
+    // Find the monthly earnings for the current month
+    let monthlyEarning = yearlyEarning.monthlyEarnings.find(
+      (earning) => earning.month === months[currentMonthIndex]
+    );
+
+    if (!monthlyEarning) {
+      // If the monthly earnings for the current month don't exist, create them based on what the current weeklyincome is
+      monthlyEarning = {
+        month: months[currentMonthIndex],
+        monthlyIncome: weeklyIncomeNumber,
+      };
+      yearlyEarning.monthlyEarnings.push(monthlyEarning);
+    }
+
+    // Add the weekly income to the monthly income
+    monthlyEarning.monthlyIncome += weeklyIncomeNumber;
+    yearlyEarning.totalRevenue += weeklyIncomeNumber;
+
+    await yearlyEarning.save({ session });
     await session.commitTransaction();
 
     res.status(200).json({ message: "Earning Report created successfully" });
