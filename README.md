@@ -4,7 +4,7 @@
 <br>
 
 ## Summer Break 2023 Personal Project
-Crafted a comprehensive MERN full-stack dashboard boasting robust CRUD functionalities, meticulously designed to encompass a tutoring dashboard. This dynamic tool enables users to track weekly income, total revenue, and peruse monthly analyses presented via intuitive bar charts.
+Crafted a comprehensive **MERN** full-stack dashboard boasting robust CRUD functionalities, meticulously designed to encompass a tutoring dashboard. This dynamic tool enables users to track weekly income, total revenue, and peruse monthly analyses presented via intuitive bar charts.
 
 Prioritized data security by implementing a secure login and register system with user roles facilitated through Google Auth, ensuring confidential information remains safeguarded.
 
