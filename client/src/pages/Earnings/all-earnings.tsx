@@ -18,8 +18,8 @@ import { Add } from "@mui/icons-material";
 import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
 import moneyBackground from "assets/money_bg.png";
-import clockBackground from "assets/clock_bg.png";
-import coinBackground from "assets/coin_bg.png";
+import clockBackground from "assets/clocks_bg.png";
+import coinBackground from "assets/coins_bg.png";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
