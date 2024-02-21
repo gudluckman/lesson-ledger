@@ -21,7 +21,7 @@ const TotalRevenue = () => {
 
   // Iterate over the keys
   localStorageKeys.forEach((key) => {
-    console.log(key);
+    console.log(`Key: ${key}, Value: ${localStorage.getItem(key)}`);
     // You can access the value associated with each key using localStorage.getItem(key)
   });
   return (
