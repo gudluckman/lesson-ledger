@@ -36,7 +36,7 @@ const ProgressBar = ({ title, percentage, color }: ProgressBarProps) => (
   </Box>
 );
 
-export const StudentReferrals = () => {
+export const SubjectPercentage = () => {
   return (
     <Box
       p={4}
@@ -48,7 +48,7 @@ export const StudentReferrals = () => {
       minWidth={490}
     >
       <Typography fontSize={18} fontWeight={600} color={"#11142d"}>
-        Student Referrals
+        Subject Percentage
       </Typography>
 
       <Stack my="20px" direction="column" gap={4}>

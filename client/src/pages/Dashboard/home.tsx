@@ -2,7 +2,7 @@ import { useList } from "@pankod/refine-core";
 import { Typography, Box, Stack } from "@pankod/refine-mui";
 import { Helmet } from "react-helmet";
 import { PieChart, TotalRevenue } from "components";
-import { StudentReferrals } from "components/charts/StudentReferrals";
+import { SubjectPercentage } from "components/charts/SubjectPercentage";
 import StudentCard from "components/common/StudentCard";
 
 const Home = () => {
@@ -10,7 +10,7 @@ const Home = () => {
     resource: "students",
     config: {
       pagination: {
-        pageSize: 4,
+        pageSize: 25,
       },
     },
   });
@@ -90,7 +90,7 @@ const Home = () => {
         gap={4}
       >
         <TotalRevenue />
-        <StudentReferrals />
+        <SubjectPercentage />
       </Stack>
 
       <Box
@@ -108,7 +108,7 @@ const Home = () => {
         </Typography>
 
         <Box mt={2.5} sx={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {latestStudents.map((student) => (
+          {latestStudents.slice(-4).reverse().map((student) => (
             <StudentCard
               key={student._id}
               id={student._id}

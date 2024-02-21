@@ -144,8 +144,8 @@ const LessonSchedule: React.FC = () => {
               xs={12}
               sm={6}
               md={4}
-              lg={2}
-              xl={1.71}
+              lg={4}
+              xl={2}
               key={day}
               sx={{ borderRight: index !== 6 ? "1px solid #ccc" : "none" }}
             >

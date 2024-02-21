@@ -49,9 +49,7 @@ const AllEarnings = () => {
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Error...</Typography>;
 
-  //
   // Start here to extract details for dashboard
-  //
   let totalEarnings = 0;
   let totalHours = 0;
 

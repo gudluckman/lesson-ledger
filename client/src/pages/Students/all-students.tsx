@@ -8,8 +8,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { Helmet } from 'react-helmet';
-import { useNavigate } from '@pankod/refine-react-router-v6';
+import { Helmet } from "react-helmet";
+import { useNavigate } from "@pankod/refine-react-router-v6";
 import { useMemo } from "react";
 import { CustomButton } from "components";
 import StudentCard from "components/common/StudentCard";
@@ -28,7 +28,7 @@ const AllStudents = () => {
     filters,
     setFilters,
   } = useTable();
-  
+
   const allStudents = data?.data ?? [];
 
   const currentBaseRate = sorter.find(
@@ -40,13 +40,16 @@ const AllStudents = () => {
   };
 
   const currentFilterValues = useMemo(() => {
-    const logicalFilters = filters.flatMap((item) => ('field' in item ? item : []));
+    const logicalFilters = filters.flatMap((item) =>
+      "field" in item ? item : []
+    );
 
     return {
-      subject: logicalFilters.find((item) => item.field === 'subject')?.value || '',
-      year: logicalFilters.find((item) => item.field === 'year')?.value || '',
-    }
-  }, [filters])
+      subject:
+        logicalFilters.find((item) => item.field === "subject")?.value || "",
+      year: logicalFilters.find((item) => item.field === "year")?.value || "",
+    };
+  }, [filters]);
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Error...</Typography>;
@@ -76,28 +79,28 @@ const AllStudents = () => {
               mb={{ xs: "20px", sm: 0 }}
             >
               <CustomButton
-                title={`Sort by Rate ${
-                  currentBaseRate === "asc" ? "↑" : "↓"
-                }`}
+                title={`Sort by Rate ${currentBaseRate === "asc" ? "↑" : "↓"}`}
                 handleClick={() => toggleSort("baseRate")}
                 backgroundColor="#475be8"
                 color="#fcfcfc"
               />
-              <TextField 
-                  variant="outlined"
-                  color="info"
-                  placeholder="Search by subject"
-                  value={currentFilterValues.subject}
-                  onChange={(e) => {
-                    setFilters([
-                      {
-                        field: 'subject',
-                        operator: 'contains',
-                        value: e.currentTarget.value ? e.currentTarget.value : undefined
-                      }
-                    ])
-                  }}
-                />
+              <TextField
+                variant="outlined"
+                color="info"
+                placeholder="Search by subject"
+                value={currentFilterValues.subject}
+                onChange={(e) => {
+                  setFilters([
+                    {
+                      field: "subject",
+                      operator: "contains",
+                      value: e.currentTarget.value
+                        ? e.currentTarget.value
+                        : undefined,
+                    },
+                  ]);
+                }}
+              />
               <Select
                 variant="outlined"
                 color="info"
@@ -120,16 +123,7 @@ const AllStudents = () => {
                 }}
               >
                 <MenuItem value="">All</MenuItem>
-                {[
-                  "12",
-                  "11",
-                  "10",
-                  "9",
-                  "8",
-                  "7",
-                  "6",
-                  "5",
-                ].map((type) => (
+                {["12", "11", "10", "9", "8", "7", "6", "5"].map((type) => (
                   <MenuItem key={type} value={type.toLowerCase()}>
                     Year {type}
                   </MenuItem>
@@ -149,7 +143,6 @@ const AllStudents = () => {
           icon={<Add />}
         />
       </Stack>
-
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {allStudents?.map((student) => (
           <StudentCard
