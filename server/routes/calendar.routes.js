@@ -7,7 +7,7 @@ const router = express.Router();
 const jwtClient = new google.auth.JWT({
   email: process.env.CLIENT_EMAIL,
   keyFile: "./service_account.json",
-  key: process.env.PRIVATE_KEY,
+  key: process.env.PRIVATE_KEY.split(String.raw`\n`).join('\n'),
   scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
