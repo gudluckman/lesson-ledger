@@ -30,6 +30,9 @@ const LessonSchedule: React.FC = () => {
       const response = await axios.get(
         "https://lesson-ledger.onrender.com/api/v1/lessons/events"
       );
+      // const response = await axios.get(
+      //   "http://localhost:5005/api/v1/lessons/events"  // Uncomment this for testing
+      // ); 
       setEvents(response.data);
       setLoading(false);
     } catch (error) {
