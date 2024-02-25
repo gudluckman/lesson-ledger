@@ -41,6 +41,23 @@ const getAllStudents = async (req, res) => {
   }
 };
 
+const getSubjectYearStatistics = async (req, res) => {
+  try {
+    const subjects = await Student.aggregate([
+      {
+        $group: {
+          _id: { subject: "$subject", year: "$year" },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.status(200).json(subjects);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 const getStudentDetail = async (req, res) => {
   const { id } = req.params;
   const studentExist = await Student.findOne({ _id: id }).populate("tutor");
@@ -193,4 +210,5 @@ export {
   createStudent,
   updateStudent,
   deleteStudent,
+  getSubjectYearStatistics
 };

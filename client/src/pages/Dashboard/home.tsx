@@ -2,7 +2,7 @@ import { useList } from "@pankod/refine-core";
 import { Typography, Box, Stack } from "@pankod/refine-mui";
 import { Helmet } from "react-helmet";
 import { PieChart, TotalRevenue } from "components";
-import { SubjectPercentage } from "components/charts/SubjectPercentage";
+import { SubjectCount } from "components/charts/SubjectCount";
 import StudentCard from "components/common/StudentCard";
 
 const Home = () => {
@@ -90,7 +90,7 @@ const Home = () => {
         gap={4}
       >
         <TotalRevenue />
-        <SubjectPercentage />
+        <SubjectCount />
       </Stack>
 
       <Box
