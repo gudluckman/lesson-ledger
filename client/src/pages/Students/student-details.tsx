@@ -64,6 +64,7 @@ const StudentDetails = () => {
       { label: "Lesson status", value: studentDetails.status },
       { label: "Session type", value: studentDetails.sessionType },
       { label: "Session mode", value: studentDetails.sessionMode },
+      { label: "Contact Number", value: studentDetails.contactNumber },
       // { label: "Source", value: studentDetails.source },
     ];
 

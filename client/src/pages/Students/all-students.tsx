@@ -123,7 +123,7 @@ const AllStudents = () => {
                 }}
               >
                 <MenuItem value="">All</MenuItem>
-                {["12", "11", "10", "9", "8", "7", "6", "5"].map((type) => (
+                {["12", "11", "10", "9", "8", "7"].map((type) => (
                   <MenuItem key={type} value={type.toLowerCase()}>
                     Year {type}
                   </MenuItem>
