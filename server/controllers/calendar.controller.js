@@ -4,8 +4,8 @@ import { google } from "googleapis";
 const jwtClient = new google.auth.JWT({
   email: process.env.CLIENT_EMAIL,
   keyFile: "./service_account.json",
-  key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
-  // key: process.env.PRIVATE_KEY, // Uncomment this for testing
+  // key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
+  key: process.env.PRIVATE_KEY, // Uncomment this for testing
   scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 

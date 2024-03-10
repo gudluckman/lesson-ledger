@@ -34,17 +34,17 @@ const AllEarnings = () => {
   } = useTable();
 
   const allEarnings = data?.data ?? [];
-
-  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
 
-  // Reverse the data array initially
-  const reversedAllEarnings = [...allEarnings].reverse();
+  const [currentPage, setCurrentPage] = useState(1);
+  const sortedEarnings = allEarnings.sort((a, b) => {
+    // Sort by the startDateOfWeek in descending order (always latest time first)
+    return new Date(b.startDateOfWeek).getTime() - new Date(a.startDateOfWeek).getTime();
+  });
 
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = currentPage * pageSize;
-
-  const earningsToShow = reversedAllEarnings.slice(startIndex, endIndex);
+  const endIndex = startIndex + pageSize;
+  const earningsToShow = sortedEarnings.slice(startIndex, endIndex);
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Error...</Typography>;
@@ -53,7 +53,7 @@ const AllEarnings = () => {
   let totalEarnings = 0;
   let totalHours = 0;
 
-  reversedAllEarnings.forEach((earning, index) => {
+  allEarnings.forEach((earning, index) => {
     totalEarnings += Number(earning.weeklyIncome);
     totalHours += Number(earning.weeklyHours);
   });
@@ -231,16 +231,16 @@ const AllEarnings = () => {
           </Typography>
           {/* Next button */}
           <button
-            disabled={endIndex >= reversedAllEarnings.length}
+            disabled={endIndex >= allEarnings.length}
             onClick={() => setCurrentPage(currentPage + 1)}
             style={{
               padding: "8px 16px",
               borderRadius: "5px",
               backgroundColor:
-                endIndex >= reversedAllEarnings.length ? "#ccc" : "#475be8",
+                endIndex >= allEarnings.length ? "#ccc" : "#475be8",
               color: "#fff",
               cursor:
-                endIndex >= reversedAllEarnings.length
+                endIndex >= allEarnings.length
                   ? "not-allowed"
                   : "pointer",
               outline: "none",

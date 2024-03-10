@@ -20,6 +20,9 @@ const Statistics = () => {
           <Typography fontSize={25} fontWeight={700} color="#11142d">
             Statistics
           </Typography>
+          <Typography fontSize={14} fontWeight={400}>
+            Coming Soon
+          </Typography>
         </Stack>
       </Box>
     </Box>

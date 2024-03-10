@@ -79,6 +79,8 @@ export interface Credential {
 export interface Google {
   accounts: {
     id: {
+      getBasicProfile(): unknown;
+      getAuthResponse(): unknown;
       initialize: (input: IdConfiguration) => void;
       prompt: (
         momentListener?: (res: PromptMomentNotification) => void
