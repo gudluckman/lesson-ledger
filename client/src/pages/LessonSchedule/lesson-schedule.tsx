@@ -19,7 +19,7 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 
 const LessonSchedule: React.FC = () => {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDay] = useState(
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
@@ -27,14 +27,18 @@ const LessonSchedule: React.FC = () => {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "https://lesson-ledger.onrender.com/api/v1/lessons/events"
-      );
-      // const response = await axios.get(
-      //   "http://localhost:5005/api/v1/lessons/events"  // Uncomment this for testing
-      // ); 
-      setEvents(response.data);
-      setLoading(false);
+      const cachedEvents = localStorage.getItem("cachedEvents");
+      if (cachedEvents) {
+        setEvents(JSON.parse(cachedEvents));
+        setLoading(false);
+      } else {
+        const response = await axios.get(
+          "https://lesson-ledger.onrender.com/api/v1/lessons/events"
+        );
+        setEvents(response.data);
+        localStorage.setItem("cachedEvents", JSON.stringify(response.data));
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error fetching events:", error);
       setLoading(false);
