@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
 import { useTable } from "@pankod/refine-core";
 import { styled } from "@mui/system";
 import { CustomButton } from "components";
+import axios from "axios";
+
 import {
   Box,
   Stack,
@@ -20,45 +22,67 @@ import HighlightCard from "components/charts/HighlightCard";
 import moneyBackground from "assets/money_bg.png";
 import clockBackground from "assets/clocks_bg.png";
 import coinBackground from "assets/coins_bg.png";
+import { EarningProps } from "interfaces/earning";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
   borderRadius: "20px",
 }));
 
-const AllEarnings = () => {
+const AllEarnings: React.FC = () => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
-  const {
-    tableQueryResult: { data, isLoading, isError },
-  } = useTable();
-
-  const allEarnings = data?.data ?? [];
-  const pageSize = 7;
-
+  const [allEarnings, setAllEarnings] = useState<EarningProps[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const sortedEarnings = allEarnings.sort((a, b) => {
-    // Sort by the startDateOfWeek in descending order (always latest time first)
-    return new Date(b.startDateOfWeek).getTime() - new Date(a.startDateOfWeek).getTime();
-  });
+  const pageSize = 5;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const cachedData = localStorage.getItem("cachedEarnings");
+        if (cachedData) {
+          setAllEarnings(JSON.parse(cachedData));
+          setLoading(false);
+        } else {
+          const response = await axios.get(
+            "https://lesson-ledger.onrender.com/api/v1/earnings"
+          );
+          setAllEarnings(response.data);
+          localStorage.setItem("cachedEarnings", JSON.stringify(response.data));
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
+  // Sort earnings by startDateOfWeek by latest earning
+  const sortedEarnings = allEarnings.sort(
+    (a, b) =>
+      new Date(b.startDateOfWeek).getTime() -
+      new Date(a.startDateOfWeek).getTime()
+  );
   const earningsToShow = sortedEarnings.slice(startIndex, endIndex);
 
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (isError) return <Typography>Error...</Typography>;
-
-  // Start here to extract details for dashboard
-  let totalEarnings = 0;
-  let totalHours = 0;
-
-  allEarnings.forEach((earning, index) => {
-    totalEarnings += Number(earning.weeklyIncome);
-    totalHours += Number(earning.weeklyHours);
-  });
-
-  // Storing total earnings and monthly earnings in localStorage
+  const totalEarnings = allEarnings.reduce(
+    (acc, earning) => acc + Number(earning.weeklyIncome),
+    0
+  );
+  const totalHours = allEarnings.reduce(
+    (acc, earning) => acc + Number(earning.weeklyHours),
+    0
+  );
   localStorage.setItem("totalRevenue", totalEarnings.toString());
   const averageHourlyRate = totalEarnings / totalHours;
 
@@ -240,9 +264,7 @@ const AllEarnings = () => {
                 endIndex >= allEarnings.length ? "#ccc" : "#475be8",
               color: "#fff",
               cursor:
-                endIndex >= allEarnings.length
-                  ? "not-allowed"
-                  : "pointer",
+                endIndex >= allEarnings.length ? "not-allowed" : "pointer",
               outline: "none",
               border: "none",
             }}
