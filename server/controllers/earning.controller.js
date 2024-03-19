@@ -8,14 +8,15 @@ const getAllEarnings = async (req, res) => {
   const { _end, _order, _start, _sort } = req.query;
 
   const query = {};
+  const options = {
+    sort: { [_sort]: _order },
+    limit: parseInt(_end),
+    skip: parseInt(_start),
+  };
 
   try {
     const count = await Earning.countDocuments(query);
-
-    const earnings = await Earning.find(query)
-      .limit(parseInt(_end))
-      .skip(parseInt(_start))
-      .sort({ [_sort]: _order });
+    const earnings = await Earning.find(query, null, options);
 
     res.header("x-total-count", count);
     res.header("Access-Control-Expose-Headers", "x-total-count");
