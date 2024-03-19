@@ -4,8 +4,8 @@ import { google } from "googleapis";
 const jwtClient = new google.auth.JWT({
   email: process.env.CLIENT_EMAIL,
   keyFile: "./service_account.json",
-  key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
-  // key: process.env.PRIVATE_KEY, // Uncomment this for testing
+  // key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
+  key: process.env.PRIVATE_KEY, // Uncomment this for testing
   scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
@@ -15,26 +15,13 @@ const calendar = google.calendar({ version: "v3", auth: jwtClient });
 // Function to fetch weekly events from Google Calendar
 const fetchWeeklyEvents = async (req, res) => {
   try {
-    // Calculate the start of the current week (Monday) at 00:00:00
     const today = new Date();
-    const isSunday = today.getDay() === 0;
-    let startOfWeek;
-    let endOfWeek;
-
-    if (isSunday) {
-      startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - 6);
-      startOfWeek.setHours(0, 0, 0, 0);
-      endOfWeek = new Date(today);
-      endOfWeek.setHours(23, 59, 59, 999);
-    } else {
-      startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Go back to Monday of the current week
-      startOfWeek.setHours(0, 0, 0, 0); // Set to 00:00:00
-      endOfWeek = new Date(today);
-      endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Go forward to Sunday of the current week
-      endOfWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
-    }
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday of current week
+    endOfWeek.setHours(23, 59, 59, 999);
 
     // console.log(
     //   `Start of the week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
@@ -50,6 +37,7 @@ const fetchWeeklyEvents = async (req, res) => {
       maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
+      fields: "items(colorId,summary,start,end,hangoutLink,description)",
     });
 
     const events = response.data.items.filter(
