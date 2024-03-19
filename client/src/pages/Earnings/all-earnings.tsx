@@ -40,18 +40,12 @@ const AllEarnings: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cachedData = localStorage.getItem("cachedEarnings");
-        if (cachedData) {
-          setAllEarnings(JSON.parse(cachedData));
-          setLoading(false);
-        } else {
-          const response = await axios.get(
-            "https://lesson-ledger.onrender.com/api/v1/earnings"
-          );
-          setAllEarnings(response.data);
-          localStorage.setItem("cachedEarnings", JSON.stringify(response.data));
-          setLoading(false);
-        }
+        const response = await axios.get(
+          // "https://lesson-ledger.onrender.com/api/v1/earnings"
+          "http://localhost:5005/api/v1/earnings"
+        );
+        setAllEarnings(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
