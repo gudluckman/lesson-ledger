@@ -37,7 +37,7 @@ const fetchWeeklyEvents = async (req, res) => {
       maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
-      fields: "items(colorId,summary,start,end,hangoutLink,description,fileUrl)",
+      fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
     const events = response.data.items.filter(
