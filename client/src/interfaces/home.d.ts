@@ -10,3 +10,8 @@ export interface HighlightCardProps {
     value: string,
     backgroundImage: string
 }
+
+export interface StatisticCardProps {
+    title: string,
+    value: string,
+}

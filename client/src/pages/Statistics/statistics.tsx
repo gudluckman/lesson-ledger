@@ -1,36 +1,118 @@
-import React from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Box, Stack, Typography, Card, CardContent, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import GroupsIcon from "@mui/icons-material/Groups";
+import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
 import BarChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
+import axios from "axios";
+import StatisticCard from "components/charts/StatisticCard";
+import ReactApexChart from "react-apexcharts";
 
 const Statistics = () => {
-  // Example data for the pie chart
-  const data = {
-    series: [9, 3, 1, 1, 1],
+  const [subjectDistribution, setSubjectDistribution] = useState([]);
+  const [yearGroupDistribution, setYearGroupDistribution] = useState([]);
+  const [weeklyIncomes, setWeeklyIncomes] = useState([]);
+
+  const [averageMonthlyIncome, setAverageMonthlyIncome] = useState<number>(0);
+  const [averageWeeklyIncome, setAverageWeeklyIncome] = useState<number>(0);
+  const [averageWeeklyHour, setAverageWeeklyHour] = useState<number>(0);
+
+  useEffect(() => {
+    // Retrieve average income from local storage
+    const currentYear = new Date().getFullYear();
+    const averageIncomeFromLocalStorage = localStorage.getItem(
+      `averageIncome_${currentYear}`
+    );
+    if (averageIncomeFromLocalStorage) {
+      setAverageMonthlyIncome(parseFloat(averageIncomeFromLocalStorage));
+    }
+
+    const averageWeeklyIncomeFromLocalStorage =
+      localStorage.getItem(`averageWeeklyIncome`);
+    if (averageWeeklyIncomeFromLocalStorage) {
+      setAverageWeeklyIncome(parseFloat(averageWeeklyIncomeFromLocalStorage));
+    }
+
+    const averageWeeklyHourFromLocalStorage =
+      localStorage.getItem(`averageWeeklyHours`);
+    if (averageWeeklyHourFromLocalStorage) {
+      setAverageWeeklyHour(parseFloat(averageWeeklyHourFromLocalStorage));
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async (url: string, sortingFn: any, setData: any) => {
+      try {
+        const response = await axios.get(url);
+        const sortedData = sortingFn
+          ? response.data.sort(sortingFn)
+          : response.data;
+        setData(sortedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    const fetchAllData = async () => {
+      const urlsAndSetters = [
+        {
+          url: "https://lesson-ledger.onrender.com/api/v1/earnings",
+          setter: setWeeklyIncomes,
+        },
+        {
+          url: "https://lesson-ledger.onrender.com/api/v1/students/statistics/subject-distribution",
+          setter: setSubjectDistribution,
+          sortingFn: (a: { _id: string }, b: { _id: any }) =>
+            a._id.localeCompare(b._id),
+        },
+        {
+          url: "https://lesson-ledger.onrender.com/api/v1/students/statistics/year-group-distribution",
+          setter: setYearGroupDistribution,
+          sortingFn: (a: { _id: string }, b: { _id: string }) =>
+            parseInt(a._id.replace(/\D/g, "")) -
+            parseInt(b._id.replace(/\D/g, "")),
+        },
+        {
+          url: "https://lesson-ledger.onrender.com/api/v1/yearly-earnings",
+          setter: setWeeklyIncomes,
+        },
+      ];
+
+      const fetchRequests = urlsAndSetters.map(({ url, setter, sortingFn }) =>
+        fetchData(url, sortingFn, setter)
+      );
+
+      await Promise.all(fetchRequests);
+    };
+
+    fetchAllData();
+  }, []);
+
+  const chartData = {
+    series: subjectDistribution.map(
+      (subject: { count: number }) => subject.count
+    ),
     options: {
-      labels: [
-        "Math",
-        "Engineering Studies",
-        "English",
-        "Software Design Development",
-        "Information Processes Technology",
-      ],
-      colors: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+      labels: subjectDistribution.map(
+        (subject: { _id: string }) => subject._id
+      ),
+      colors: ["#4BC0C0", "#36A2EB", "#FFCE56", "#FF6384", "#9966FF"],
       legend: {
         show: true,
       },
     },
   };
 
-  const data2 = {
+  const barData = {
     series: [
       {
         name: "Student Count",
-        data: [8, 5, 7, 4, 6, 9],
+        data: yearGroupDistribution.map(
+          (group: { count: number }) => group.count
+        ),
       },
     ],
     options: {
@@ -50,16 +132,115 @@ const Statistics = () => {
         enabled: false,
       },
       xaxis: {
-        categories: ["Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12"],
+        categories: yearGroupDistribution.map(
+          (group: { _id: string }) => group._id
+        ),
+        labels: {
+          formatter: function (val: string | number) {
+            return `Year ${val}`;
+          },
+        },
       },
       yaxis: {
         title: {
           text: "Number of Students",
         },
       },
-      colors: ["#96D74C"],
+      colors: ["#ff781f"],
       legend: {
         show: true,
+      },
+    },
+  };
+
+  const lineChartIncomeData = {
+    series: [
+      {
+        name: "Income",
+        data: weeklyIncomes.map(
+          (income: { weeklyIncome: number }) => income.weeklyIncome
+        ),
+      },
+    ],
+    options: {
+      chart: {
+        height: 300,
+        type: "area",
+        toolbar: {
+          show: false,
+        },
+      },
+      stroke: {
+        width: 3,
+        curve: "smooth",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      xaxis: {
+        type: "datetime",
+        categories: weeklyIncomes.map(
+          (income: { startDateOfWeek: string }) => income.startDateOfWeek
+        ),
+        labels: {
+          show: false,
+          format: "dd/MM/yyyy",
+        },
+      },
+      yaxis: {
+        title: {
+          text: "Income per week",
+        },
+      },
+      colors: ["#06c258"],
+      legend: {
+        show: false,
+      },
+    },
+  };
+
+  const lineChartHoursData = {
+    series: [
+      {
+        name: "Hours",
+        data: weeklyIncomes.map(
+          (income: { weeklyHours: number }) => income.weeklyHours
+        ),
+      },
+    ],
+    options: {
+      chart: {
+        height: 300,
+        type: "area",
+        toolbar: {
+          show: false,
+        },
+      },
+      stroke: {
+        width: 3,
+        curve: "smooth",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      xaxis: {
+        type: "datetime",
+        categories: weeklyIncomes.map(
+          (income: { startDateOfWeek: string }) => income.startDateOfWeek
+        ),
+        labels: {
+          show: false,
+          format: "dd/MM/yyyy",
+        },
+      },
+      yaxis: {
+        title: {
+          text: "Income per week",
+        },
+      },
+      colors: ["#29bbff"],
+      legend: {
+        show: false,
       },
     },
   };
@@ -74,11 +255,9 @@ const Statistics = () => {
           <Typography fontSize={25} fontWeight={700} color="#11142d">
             Statistics
           </Typography>
-          <Typography fontSize={14} fontWeight={400}>
-            Still In Development...
-          </Typography>
         </Stack>
         <Grid container spacing={3} justifyContent="center" alignItems="center">
+          {/* Student distribution by subject and year group chart */}
           <Grid item xs={12} md={10} lg={6}>
             <Card
               sx={{
@@ -88,7 +267,7 @@ const Statistics = () => {
                 boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 textDecoration: "none",
                 color: "inherit",
-                marginBottom: { xs: 0, md: "20px" },
+                marginBottom: { xs: 0, md: "10px" },
               }}
             >
               <CardContent>
@@ -103,11 +282,13 @@ const Statistics = () => {
                   </Typography>
                 </Stack>
                 <Chart
-                  options={data.options}
-                  series={data.series}
+                  options={{
+                    ...chartData.options,
+                    legend: { show: window.innerWidth >= 600 },
+                  }}
+                  series={chartData.series}
                   type="pie"
-                  width="100%"
-                  height={360}
+                  height={310}
                 />
               </CardContent>
             </Card>
@@ -121,7 +302,7 @@ const Statistics = () => {
                 boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 textDecoration: "none",
                 color: "inherit",
-                marginBottom: { xs: 0, md: "20px" },
+                marginBottom: { xs: 0, md: "10px" },
               }}
             >
               <CardContent>
@@ -136,10 +317,116 @@ const Statistics = () => {
                   </Typography>
                 </Stack>
                 <BarChart
-                  options={data2.options as ApexOptions}
-                  series={data2.series}
+                  options={barData.options as ApexOptions}
+                  series={barData.series}
                   type="bar"
-                  height={350}
+                  height={300}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Number Stats */}
+          <Grid item xs={12} md={10} lg={12}>
+            <Box
+              bgcolor="#ffffff"
+              display={"flex"}
+              justifyContent={{
+                xs: "center",
+                md: "space-between",
+                lg: "space-between",
+              }}
+              alignContent={"center"}
+              sx={{
+                width: "100%",
+                padding: { xs: "10px", md: "10px", lg: "10px 200px" },
+                borderRadius: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                textDecoration: "none",
+                color: "inherit",
+                marginBottom: { xs: 0, md: "10px" },
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
+            >
+              <StatisticCard
+                title="Average Weekly Income"
+                value={`$${averageWeeklyIncome.toFixed(2)}`}
+              />
+              <StatisticCard
+                title="Average Weekly Hours"
+                value={`${averageWeeklyHour.toFixed(2)}`}
+              />
+              <StatisticCard
+                title="Average Monthly Income"
+                value={`$${averageMonthlyIncome.toFixed(2)}`}
+              />
+            </Box>
+          </Grid>
+
+          {/* Income & Hours statistics charts */}
+          <Grid item xs={12} md={10} lg={6}>
+            <Card
+              sx={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                textDecoration: "none",
+                color: "inherit",
+                marginBottom: { xs: 0, md: "10px" },
+              }}
+            >
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <RequestQuoteIcon sx={{ fontSize: 28 }} />
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={500}
+                    sx={{ textAlign: "start" }}
+                  >
+                    Weekly Income Trends
+                  </Typography>
+                </Stack>
+                <ReactApexChart
+                  options={lineChartIncomeData.options as ApexOptions}
+                  series={lineChartIncomeData.series}
+                  type="area"
+                  width="100%"
+                  height={300}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={10} lg={6}>
+            <Card
+              sx={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                textDecoration: "none",
+                color: "inherit",
+                marginBottom: { xs: 0, md: "10px" },
+              }}
+            >
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <RequestQuoteIcon sx={{ fontSize: 28 }} />
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={500}
+                    sx={{ textAlign: "start" }}
+                  >
+                    Weekly Hours Trends
+                  </Typography>
+                </Stack>
+                <ReactApexChart
+                  options={lineChartHoursData.options as ApexOptions}
+                  series={lineChartHoursData.series}
+                  type="area"
+                  width="100%"
+                  height={300}
                 />
               </CardContent>
             </Card>

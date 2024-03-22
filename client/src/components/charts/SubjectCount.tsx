@@ -1,21 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Stack } from "@mui/material";
 import axios from "axios";
+import { SubjectData, ProgressBarProps } from "interfaces/subject";
 
-interface SubjectData {
-  _id: {
-    subject: string;
-    year: string;
-  };
-  count: number;
-}
-
-interface ProgressBarProps {
-  title: string;
-  year: string;
-  count: number;
-  color: string;
-}
 
 const ProgressBar = ({ title, year, count, color }: ProgressBarProps) => (
   <Box width="100%">

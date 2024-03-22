@@ -91,6 +91,14 @@ fetch('https://lesson-ledger.onrender.com/api/v1/yearly-earnings')
       yearlyEarning.monthlyEarnings.forEach((monthlyEarning: any, index: number) => {
         TotalRevenueSeries[yearIndex].data[index] = monthlyEarning.monthlyIncome;
       });
+
+      // Calculate average monthly income
+      const monthlyIncomes = yearlyEarning.monthlyEarnings.map((monthlyEarning: any) => monthlyEarning.monthlyIncome);
+      const totalIncome = monthlyIncomes.reduce((acc: number, income: number) => acc + income, 0);
+      const averageIncome = totalIncome / monthlyIncomes.length;
+
+      // Store average monthly income in local storage
+      localStorage.setItem(`averageIncome_${year}`, averageIncome.toString());
     });
   })
   .catch(error => {

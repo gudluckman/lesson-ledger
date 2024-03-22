@@ -22,7 +22,7 @@ import HighlightCard from "components/charts/HighlightCard";
 import moneyBackground from "assets/money_bg.png";
 import clockBackground from "assets/clocks_bg.png";
 import coinBackground from "assets/coins_bg.png";
-import { EarningProps } from "interfaces/earning";
+import { EarningProps } from "../../interfaces/earning";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
@@ -78,6 +78,13 @@ const AllEarnings: React.FC = () => {
     0
   );
   localStorage.setItem("totalRevenue", totalEarnings.toString());
+
+  // Calculate average weekly income
+  const averageWeeklyIncome = totalEarnings / allEarnings.length;
+  localStorage.setItem("averageWeeklyIncome", averageWeeklyIncome.toString());
+  
+  const averageWeeklyHours = totalHours / allEarnings.length;
+  localStorage.setItem("averageWeeklyHours", averageWeeklyHours.toString());
   const averageHourlyRate = totalEarnings / totalHours;
 
   return (
