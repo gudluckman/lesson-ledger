@@ -75,10 +75,6 @@ const Statistics = () => {
             parseInt(a._id.replace(/\D/g, "")) -
             parseInt(b._id.replace(/\D/g, "")),
         },
-        {
-          url: "https://lesson-ledger.onrender.com/api/v1/yearly-earnings",
-          setter: setWeeklyIncomes,
-        },
       ];
 
       const fetchRequests = urlsAndSetters.map(({ url, setter, sortingFn }) =>
