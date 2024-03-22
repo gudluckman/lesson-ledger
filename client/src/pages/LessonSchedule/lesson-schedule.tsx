@@ -158,10 +158,10 @@ const LessonSchedule: React.FC = () => {
               <Grid
                 item
                 xs={12}
-                sm={6}
-                md={4}
+                sm={12}
+                md={12}
                 lg={4}
-                xl={2}
+                xl={3}
                 key={day}
                 sx={{ borderRight: index !== 6 ? "1px solid #ccc" : "none" }}
               >

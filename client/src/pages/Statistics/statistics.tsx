@@ -1,10 +1,11 @@
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Stack, Typography, Card, CardContent, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import GroupsIcon from "@mui/icons-material/Groups";
 import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BarChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import axios from "axios";
@@ -322,7 +323,6 @@ const Statistics = () => {
             </Card>
           </Grid>
 
-          {/* Number Stats */}
           <Grid item xs={12} md={10} lg={12}>
             <Box
               bgcolor="#ffffff"
@@ -349,9 +349,25 @@ const Statistics = () => {
                 title="Average Weekly Income"
                 value={`$${averageWeeklyIncome.toFixed(2)}`}
               />
+              <hr
+                style={{
+                  height: "50px",
+                  border: "none",
+                  borderRight: "1px solid #ccc",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              />
               <StatisticCard
                 title="Average Weekly Hours"
                 value={`${averageWeeklyHour.toFixed(2)}`}
+              />
+              <hr
+                style={{
+                  height: "50px",
+                  border: "none",
+                  borderRight: "1px solid #ccc",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
               />
               <StatisticCard
                 title="Average Monthly Income"
@@ -408,7 +424,7 @@ const Statistics = () => {
             >
               <CardContent>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <RequestQuoteIcon sx={{ fontSize: 28 }} />
+                  <AccessTimeIcon sx={{ fontSize: 28 }} />
                   <Typography
                     variant="subtitle1"
                     fontWeight={500}

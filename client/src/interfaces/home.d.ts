@@ -8,7 +8,7 @@ export interface PieChartProps {
 export interface HighlightCardProps {
     title: string,
     value: string,
-    backgroundImage: string
+    color: string
 }
 
 export interface StatisticCardProps {

@@ -1,47 +1,36 @@
 import { Box, Typography, Stack } from "@pankod/refine-mui";
 import { HighlightCardProps } from "interfaces/home";
 
-const HighlightCard = ({ title, value, backgroundImage }: HighlightCardProps) => {
+const HighlightCard = ({ title, value, color }: HighlightCardProps) => {
   return (
     <Box
       id="chart"
       flex={1}
       display="flex"
-      flexDirection="row"
       justifyContent="center"
-      alignItems="center"
       pl={2}
+      pr={2}
       py={2}
       gap={2}
       borderRadius="15px"
-      minHeight="110px"
+      minHeight="100px"
       width="fit-content"
       position="relative"
-      boxShadow={3}
+      boxShadow={4}
+      bgcolor={`rgba(${color}, 0.8)`}
+      mx="auto"
     >
-      {backgroundImage && (
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.5,
-            borderRadius: "15px",
-          }}
-        />
-      )}
-
       <Stack
         direction="column"
         alignItems="center"
         bgcolor="#fcfcfc"
         borderRadius="10px"
-        padding="5px 20px"
+        padding={{
+          xl: "5px 50px",
+          lg: "5px 30px",
+          sm: "5px 10px",
+          xs: "5px 20px",
+        }}
         boxShadow="0px 4px 8px rgba(0, 0, 0, 0.1)"
         zIndex={1}
       >

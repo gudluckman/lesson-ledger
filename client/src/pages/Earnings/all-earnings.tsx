@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
-import { useTable } from "@pankod/refine-core";
 import { styled } from "@mui/system";
 import { CustomButton } from "components";
 import axios from "axios";
@@ -19,9 +18,6 @@ import {
 import { Add } from "@mui/icons-material";
 import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
-import moneyBackground from "assets/money_bg.png";
-import clockBackground from "assets/clocks_bg.png";
-import coinBackground from "assets/coins_bg.png";
 import { EarningProps } from "../../interfaces/earning";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
@@ -103,17 +99,17 @@ const AllEarnings: React.FC = () => {
             <HighlightCard
               title="Total Earnings"
               value={`$${totalEarnings.toFixed(2)}`}
-              backgroundImage={moneyBackground}
+              color="#F0F0F0"
             />
             <HighlightCard
               title="Total Hours"
               value={totalHours.toString()}
-              backgroundImage={clockBackground}
+              color="#F0F0F0"
             />
             <HighlightCard
               title="Average Hourly Rate"
               value={`$${averageHourlyRate.toFixed(2)}`}
-              backgroundImage={coinBackground}
+              color="#F0F0F0"
             />
           </Box>
           <Box
@@ -150,7 +146,7 @@ const AllEarnings: React.FC = () => {
         </Stack>
       </Box>
 
-      <Box mt="20px">
+      <Box mt="20px" borderRadius="30px" overflow="hidden">
         <TableContainer>
           <Table>
             <TableBody

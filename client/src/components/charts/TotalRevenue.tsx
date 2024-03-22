@@ -1,6 +1,5 @@
 import ReactApexChart from "react-apexcharts";
 import { Box, Typography, Stack } from "@pankod/refine-mui";
-import { ArrowCircleUpRounded } from "@mui/icons-material";
 
 import { TotalRevenueOptions, TotalRevenueSeries } from "./chart.config";
 import { useEffect, useState } from "react";
@@ -42,17 +41,6 @@ const TotalRevenue = () => {
         <Typography fontSize={28} fontWeight={700} color="#11142d">
           ${totalRevenue.toLocaleString()}
         </Typography>
-        <Stack direction="row" alignItems="center" gap={1}>
-          <ArrowCircleUpRounded sx={{ fontSize: 25, color: "#475be8" }} />
-          <Stack>
-            <Typography fontSize={15} color="#475be8">
-              630%
-            </Typography>
-            <Typography fontSize={12} color="#808191">
-              Than Last Year
-            </Typography>
-          </Stack>
-        </Stack>
       </Stack>
 
       <ReactApexChart

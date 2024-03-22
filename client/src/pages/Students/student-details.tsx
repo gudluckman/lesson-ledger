@@ -128,9 +128,10 @@ const StudentDetails = () => {
           </TableContainer>
 
           <Stack
-            direction="row"
-            justifyContent="space-between"
-            spacing={2}
+            direction={{ base: "row", sm: "row", xs: "column" }}
+            justifyContent={{ base: "center", sm: "space-between" }}
+            alignItems={"center"}
+            spacing={{ base: 2, xs: 2 }}
             mt={4}
           >
             <CustomButton
