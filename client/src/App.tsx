@@ -7,12 +7,9 @@ import {
   ReadyPage,
   ErrorComponent,
 } from "@pankod/refine-mui";
-import {
-  PeopleAltOutlined,
-  WalletOutlined,
-} from '@mui/icons-material'
-import TimelineIcon from '@mui/icons-material/Timeline';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import { PeopleAltOutlined, WalletOutlined } from "@mui/icons-material";
+import TimelineIcon from "@mui/icons-material/Timeline";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import dataProvider from "@pankod/refine-simple-rest";
 import routerProvider from "@pankod/refine-react-router-v6";
 import axios, { AxiosRequestConfig } from "axios";
@@ -20,10 +17,7 @@ import { Title, Sider, Layout, Header } from "components/layout";
 import { ColorModeContextProvider } from "contexts";
 import { CredentialResponse } from "interfaces/google";
 import { parseJwt } from "utils/parse-jwt";
-import { 
-  Login,
-  Home,
-} from "pages";
+import { Login, Home } from "pages";
 import AllStudents from "pages/Students/all-students";
 import StudentDetails from "pages/Students/student-details";
 import CreateStudent from "pages/Students/create-student";
@@ -52,33 +46,35 @@ function App() {
     login: async ({ credential }: CredentialResponse) => {
       const profileObj = credential ? parseJwt(credential) : null;
 
-      if (profileObj) {
-        const response = await fetch('https://lesson-ledger-api.vercel.app/api/v1/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: profileObj.name,
-            email: profileObj.email,
+      if (profileObj && profileObj.email) {
+        // Fetch the list of users from the server
+        const response = await fetch(
+          "https://lesson-ledger-api.vercel.app/api/v1/users"
+        );
+        const users = await response.json();
+
+        // Check if the user with the given email exists in the list
+        const userExists = users.some(
+          (user: { email: string; }) => user.email === profileObj.email
+        );
+        if (!userExists) {
+          // User does not exist in the database, reject the login attempt
+          return Promise.reject("User not found.");
+        }
+
+        // User exists, store necessary information in local storage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...profileObj,
             avatar: profileObj.picture,
           })
-        })
-
-        const data = await response.json();
-
-        if(response.status === 200) {
-          localStorage.setItem(
-            "user",
-            JSON.stringify({
-              ...profileObj,
-              avatar: profileObj.picture,
-              userid: data._id
-            })
-          );
-        } else {
-          return Promise.reject()
-        }
+        );
+        localStorage.setItem("token", `${credential}`);
+      } else {
+        // No profile object found or no email provided, reject the login attempt
+        return Promise.reject("Invalid credential.");
       }
-      localStorage.setItem("token", `${credential}`);
 
       return Promise.resolve();
     },
@@ -121,7 +117,9 @@ function App() {
       <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
       <RefineSnackbarProvider>
         <Refine
-          dataProvider={dataProvider("https://lesson-ledger-api.vercel.app/api/v1")}
+          dataProvider={dataProvider(
+            "https://lesson-ledger-api.vercel.app/api/v1"
+          )}
           notificationProvider={notificationProvider}
           ReadyPage={ReadyPage}
           catchAll={<ErrorComponent />}
