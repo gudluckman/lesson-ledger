@@ -16,12 +16,24 @@ const calendar = google.calendar({ version: "v3", auth: jwtClient });
 const fetchWeeklyEvents = async (req, res) => {
   try {
     const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday of current week
-    endOfWeek.setHours(23, 59, 59, 999);
+    const isSunday = today.getDay() === 0;
+    let startOfWeek;
+    let endOfWeek;
+
+    if (isSunday) {
+      startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - 6);
+      startOfWeek.setHours(0, 0, 0, 0);
+      endOfWeek = new Date(today);
+      endOfWeek.setHours(23, 59, 59, 999);
+    } else {
+      startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Go back to Monday of the current week
+      startOfWeek.setHours(0, 0, 0, 0); // Set to 00:00:00
+      endOfWeek = new Date(today);
+      endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Go forward to Sunday of the current week
+      endOfWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
+    }
 
     // console.log(
     //   `Start of the week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
