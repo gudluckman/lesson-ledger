@@ -40,7 +40,7 @@ export const SubjectCount = () => {
     const fetchSubjectData = async () => {
       try {
         const response = await axios.get(
-          "https://lesson-ledger.onrender.com/api/v1/students/statistics/subject"
+          "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/subject"
         );
         setSubjectData(response.data);
       } catch (error) {

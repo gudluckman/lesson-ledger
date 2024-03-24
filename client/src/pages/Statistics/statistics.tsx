@@ -60,17 +60,17 @@ const Statistics = () => {
     const fetchAllData = async () => {
       const urlsAndSetters = [
         {
-          url: "https://lesson-ledger.onrender.com/api/v1/earnings",
+          url: "https://lesson-ledger-api.vercel.app/api/v1/earnings",
           setter: setWeeklyIncomes,
         },
         {
-          url: "https://lesson-ledger.onrender.com/api/v1/students/statistics/subject-distribution",
+          url: "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/subject-distribution",
           setter: setSubjectDistribution,
           sortingFn: (a: { _id: string }, b: { _id: any }) =>
             a._id.localeCompare(b._id),
         },
         {
-          url: "https://lesson-ledger.onrender.com/api/v1/students/statistics/year-group-distribution",
+          url: "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/year-group-distribution",
           setter: setYearGroupDistribution,
           sortingFn: (a: { _id: string }, b: { _id: string }) =>
             parseInt(a._id.replace(/\D/g, "")) -

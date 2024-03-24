@@ -37,7 +37,7 @@ const AllEarnings: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://lesson-ledger.onrender.com/api/v1/earnings"
+          "https://lesson-ledger-api.vercel.app/api/v1/earnings"
           // "http://localhost:5005/api/v1/earnings"
         );
         setAllEarnings(response.data);

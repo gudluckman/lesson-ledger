@@ -28,7 +28,7 @@ const LessonSchedule: React.FC = () => {
   const fetchEvents = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://lesson-ledger.onrender.com/api/v1/lessons/events"
+        "https://lesson-ledger-api.vercel.app/api/v1/lessons/events"
         // "http://localhost:5005/api/v1/lessons/events"
       );
       setEvents(response.data);

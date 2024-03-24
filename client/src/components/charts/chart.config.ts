@@ -74,7 +74,7 @@ export const TotalRevenueOptions: ApexOptions = {
 };
 
 // Fetch yearly earnings data from the API
-fetch('https://lesson-ledger.onrender.com/api/v1/yearly-earnings')
+fetch('https://lesson-ledger-api.vercel.app/api/v1/yearly-earnings')
   .then(response => {
     if (!response.ok) {
       throw new Error('Failed to fetch yearly earnings');
