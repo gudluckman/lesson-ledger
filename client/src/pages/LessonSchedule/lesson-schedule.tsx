@@ -125,7 +125,7 @@ const LessonSchedule: React.FC = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" gap={3}>
-          <Typography fontSize={25} fontWeight={700} color="#11142d">
+          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142d">
             This Week's Lessons
           </Typography>
           <CustomButton
