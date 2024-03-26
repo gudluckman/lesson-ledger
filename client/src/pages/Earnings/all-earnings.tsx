@@ -78,7 +78,7 @@ const AllEarnings: React.FC = () => {
   // Calculate average weekly income
   const averageWeeklyIncome = totalEarnings / allEarnings.length;
   localStorage.setItem("averageWeeklyIncome", averageWeeklyIncome.toString());
-  
+
   const averageWeeklyHours = totalHours / allEarnings.length;
   localStorage.setItem("averageWeeklyHours", averageWeeklyHours.toString());
   const averageHourlyRate = totalEarnings / totalHours;
@@ -90,7 +90,7 @@ const AllEarnings: React.FC = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
-          <Typography fontSize={25} fontWeight={700} color="#11142d">
+          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
             {allEarnings.length
               ? `All Earnings (${currentYear})`
               : "There are no earnings"}
@@ -154,6 +154,7 @@ const AllEarnings: React.FC = () => {
                 backgroundColor: "#ffffff",
                 borderRadius: "15px",
                 padding: "15px",
+                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)"
               }}
             >
               <StyledTableRow>
@@ -165,6 +166,7 @@ const AllEarnings: React.FC = () => {
                     variant="subtitle1"
                     fontWeight={700}
                     color="#f8f9fa"
+                    fontSize={{ xs: "12px", md: "16px" }}
                   >
                     Start Date
                   </Typography>
@@ -177,6 +179,7 @@ const AllEarnings: React.FC = () => {
                     variant="subtitle1"
                     fontWeight={700}
                     color="#f8f9fa"
+                    fontSize={{ xs: "12px", md: "16px" }}
                   >
                     End Date
                   </Typography>
@@ -189,8 +192,9 @@ const AllEarnings: React.FC = () => {
                     variant="subtitle1"
                     fontWeight={700}
                     color="#f8f9fa"
+                    fontSize={{ xs: "12px", md: "16px" }}
                   >
-                    Weekly Hours
+                    Hours
                   </Typography>
                 </TableCell>
                 <TableCell
@@ -201,8 +205,9 @@ const AllEarnings: React.FC = () => {
                     variant="subtitle1"
                     fontWeight={700}
                     color="#f8f9fa"
+                    fontSize={{ xs: "12px", md: "16px" }}
                   >
-                    Weekly Income
+                    Income
                   </Typography>
                 </TableCell>
               </StyledTableRow>
