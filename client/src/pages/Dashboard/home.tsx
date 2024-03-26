@@ -38,11 +38,11 @@ const Home = () => {
       <Helmet>
         <title>Dashboard</title>
       </Helmet>
-      <Typography fontSize={25} fontWeight={700} color="#11142D">
+      <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
         Dashboard
       </Typography>
 
-      <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
+      <Box mt="2rem" display="flex" flexWrap="wrap" gap="1rem">
         <PieChart
           title="Weekly Earning"
           value={`$${parseFloat(currentWeeklyIncomeSum ?? "0").toString()}`}
@@ -84,10 +84,10 @@ const Home = () => {
       </Box>
 
       <Stack
-        mt="25px"
+        mt="1.5rem"
         width="100%"
         direction={{ xs: "column", lg: "row" }}
-        gap={4}
+        gap="1rem"
       >
         <TotalRevenue />
         <SubjectCount />
@@ -100,25 +100,27 @@ const Home = () => {
         bgcolor="#fcfcfc"
         display="flex"
         flexDirection="column"
-        minWidth="100%"
-        mt="25px"
+        mt="1.5rem"
       >
-        <Typography fontSize="18px" fontWeight={600} color="#11142d">
+        <Typography variant="h2" fontSize="1.5rem" fontWeight={600} color="#11142d">
           Latest Students
         </Typography>
 
-        <Box mt={2.5} sx={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {latestStudents.slice(-4).reverse().map((student) => (
-            <StudentCard
-              key={student._id}
-              id={student._id}
-              studentName={student.studentName}
-              year={student.year}
-              baseRate={student.baseRate}
-              subject={student.subject}
-              status={student.status}
-            />
-          ))}
+        <Box mt="1.25rem" display="flex" flexWrap="wrap" gap="1rem">
+          {latestStudents
+            .slice(-4)
+            .reverse()
+            .map((student) => (
+              <StudentCard
+                key={student._id}
+                id={student._id}
+                studentName={student.studentName}
+                year={student.year}
+                baseRate={student.baseRate}
+                subject={student.subject}
+                status={student.status}
+              />
+            ))}
         </Box>
       </Box>
     </Box>

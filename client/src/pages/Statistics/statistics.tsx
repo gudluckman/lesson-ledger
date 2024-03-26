@@ -251,7 +251,7 @@ const Statistics = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
-          <Typography fontSize={25} fontWeight={700} color="#11142d">
+          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142d">
             Statistics
           </Typography>
         </Stack>
