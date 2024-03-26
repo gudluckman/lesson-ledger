@@ -11,6 +11,7 @@ import { ApexOptions } from "apexcharts";
 import axios from "axios";
 import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
+import { Theme, useMediaQuery } from "@pankod/refine-mui";
 
 const Statistics = () => {
   const [subjectDistribution, setSubjectDistribution] = useState([]);
@@ -241,6 +242,7 @@ const Statistics = () => {
       },
     },
   };
+  const isXs = useMediaQuery((theme: Theme) => theme.breakpoints.down('xs'));
 
   return (
     <Box>
@@ -285,7 +287,7 @@ const Statistics = () => {
                   }}
                   series={chartData.series}
                   type="pie"
-                  height={310}
+                  height={330}
                 />
               </CardContent>
             </Card>
@@ -335,7 +337,7 @@ const Statistics = () => {
               alignContent={"center"}
               sx={{
                 width: "100%",
-                padding: { xs: "10px", md: "10px", lg: "10px 200px" },
+                padding: "10px",
                 borderRadius: "10px",
                 boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 textDecoration: "none",
@@ -345,34 +347,26 @@ const Statistics = () => {
                 flexWrap: "wrap",
               }}
             >
-              <StatisticCard
-                title="Average Weekly Income"
-                value={`$${averageWeeklyIncome.toFixed(2)}`}
-              />
-              <hr
-                style={{
-                  height: "50px",
-                  border: "none",
-                  borderRight: "1px solid #ccc",
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              />
-              <StatisticCard
-                title="Average Weekly Hours"
-                value={`${averageWeeklyHour.toFixed(2)}`}
-              />
-              <hr
-                style={{
-                  height: "50px",
-                  border: "none",
-                  borderRight: "1px solid #ccc",
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              />
-              <StatisticCard
-                title="Average Monthly Income"
-                value={`$${averageMonthlyIncome.toFixed(2)}`}
-              />
+              <Box
+                display="flex"
+                flexDirection={{ xs: "column", lg: "row" }}
+                justifyContent="center"
+                width="100%"
+              >
+                <StatisticCard
+                  title="Average Weekly Income"
+                  value={`$${averageWeeklyIncome.toFixed(2)}`}
+                />
+                <StatisticCard
+                  title="Average Weekly Hours"
+                  value={`${averageWeeklyHour.toFixed(2)}`}
+                  border={isXs ? 'none' : '1px solid #ccc'}
+                />
+                <StatisticCard
+                  title="Average Monthly Income"
+                  value={`$${averageMonthlyIncome.toFixed(2)}`}
+                />
+              </Box>
             </Box>
           </Grid>
 

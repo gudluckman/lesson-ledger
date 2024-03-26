@@ -14,4 +14,5 @@ export interface HighlightCardProps {
 export interface StatisticCardProps {
     title: string,
     value: string,
+    border?: string
 }
