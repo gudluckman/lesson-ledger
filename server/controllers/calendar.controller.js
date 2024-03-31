@@ -51,7 +51,8 @@ const fetchWeeklyEvents = async (req, res) => {
       maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
-      fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
+      fields:
+        "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
     const events = response.data.items.filter(
@@ -70,8 +71,7 @@ const fetchWeeklyEvents = async (req, res) => {
 // Function to clear lessons cache
 const clearLessonsCache = () => {
   lessonsCache = null;
-  console.log('Lessons cache cleared');
+  console.log("Lessons cache cleared");
 };
-
 
 export { fetchWeeklyEvents, clearLessonsCache };
