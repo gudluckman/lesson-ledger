@@ -13,6 +13,11 @@ import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
 import { Theme, useMediaQuery, useTheme } from "@pankod/refine-mui";
 
+const baseURL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5005/api/v1"
+    : "https://lesson-ledger-api.vercel.app/api/v1";
+
 const Statistics = () => {
   const [subjectDistribution, setSubjectDistribution] = useState([]);
   const [yearGroupDistribution, setYearGroupDistribution] = useState([]);
@@ -61,17 +66,17 @@ const Statistics = () => {
     const fetchAllData = async () => {
       const urlsAndSetters = [
         {
-          url: "https://lesson-ledger-api.vercel.app/api/v1/earnings",
+          url: `${baseURL}/earnings`,
           setter: setWeeklyIncomes,
         },
         {
-          url: "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/subject-distribution",
+          url: `${baseURL}/students/statistics/subject-distribution`,
           setter: setSubjectDistribution,
           sortingFn: (a: { _id: string }, b: { _id: any }) =>
             a._id.localeCompare(b._id),
         },
         {
-          url: "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/year-group-distribution",
+          url: `${baseURL}/students/statistics/year-group-distribution`,
           setter: setYearGroupDistribution,
           sortingFn: (a: { _id: string }, b: { _id: string }) =>
             parseInt(a._id.replace(/\D/g, "")) -
@@ -88,7 +93,7 @@ const Statistics = () => {
 
     fetchAllData();
   }, []);
-  
+
   const theme = useTheme();
   const isWidthLessThanLg = useMediaQuery(theme.breakpoints.down("lg"));
   const isWidthGreaterThanSm = useMediaQuery(theme.breakpoints.up("sm"));
@@ -96,7 +101,7 @@ const Statistics = () => {
   const isWidthGreaterThanXL = useMediaQuery(theme.breakpoints.up("xl"));
   const isWidthLessThanXL = useMediaQuery(theme.breakpoints.down("xl"));
   const chartHeight = isWidthGreaterThanLG && isWidthLessThanXL ? 335 : 312;
-  
+
   const chartData = {
     series: subjectDistribution.map(
       (subject: { count: number }) => subject.count
@@ -107,7 +112,8 @@ const Statistics = () => {
       ),
       colors: ["#4BC0C0", "#36A2EB", "#FFCE56", "#FF6384", "#9966FF"],
       legend: {
-        show: (isWidthLessThanLg || isWidthGreaterThanXL) && isWidthGreaterThanSm,
+        show:
+          (isWidthLessThanLg || isWidthGreaterThanXL) && isWidthGreaterThanSm,
       },
     },
   };

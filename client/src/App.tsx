@@ -42,6 +42,11 @@ axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
 });
 
 function App() {
+  const baseURL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:5005/api/v1"
+      : "https://lesson-ledger-api.vercel.app/api/v1";
+
   const authProvider: AuthProvider = {
     login: async ({ credential }: CredentialResponse) => {
       const profileObj = credential ? parseJwt(credential) : null;
@@ -49,7 +54,7 @@ function App() {
       if (profileObj && profileObj.email) {
         // Fetch the list of users from the server
         const response = await fetch(
-          "https://lesson-ledger-api.vercel.app/api/v1/users"
+          `${baseURL}/users`
         );
         const users = await response.json();
 
@@ -118,7 +123,7 @@ function App() {
       <RefineSnackbarProvider>
         <Refine
           dataProvider={dataProvider(
-            "https://lesson-ledger-api.vercel.app/api/v1"
+            `${baseURL}`
           )}
           notificationProvider={notificationProvider}
           ReadyPage={ReadyPage}

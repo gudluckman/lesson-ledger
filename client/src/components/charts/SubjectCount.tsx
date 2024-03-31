@@ -35,12 +35,16 @@ const ProgressBar = ({ title, year, count, color }: ProgressBarProps) => (
 
 export const SubjectCount = () => {
   const [subjectData, setSubjectData] = useState<SubjectData[]>([]);
+  const baseURL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5005/api/v1"
+    : "https://lesson-ledger-api.vercel.app/api/v1";
 
   useEffect(() => {
     const fetchSubjectData = async () => {
       try {
         const response = await axios.get(
-          "https://lesson-ledger-api.vercel.app/api/v1/students/statistics/subject"
+          `${baseURL}/students/statistics/subject`
         );
         setSubjectData(response.data);
       } catch (error) {
@@ -49,7 +53,7 @@ export const SubjectCount = () => {
     };
 
     fetchSubjectData();
-  }, []);
+  }, [baseURL]);
 
   // Map subjects to colors
   const subjectColors: { [key: string]: string } = {
