@@ -11,7 +11,7 @@ import { ApexOptions } from "apexcharts";
 import axios from "axios";
 import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
-import { Theme, useMediaQuery } from "@pankod/refine-mui";
+import { Theme, useMediaQuery, useTheme } from "@pankod/refine-mui";
 
 const Statistics = () => {
   const [subjectDistribution, setSubjectDistribution] = useState([]);
@@ -88,7 +88,13 @@ const Statistics = () => {
 
     fetchAllData();
   }, []);
-
+  
+  const theme = useTheme();
+  const isWidthLessThanLg = useMediaQuery(theme.breakpoints.down("lg"));
+  const isWidthGreaterThanLG = useMediaQuery(theme.breakpoints.up("lg"));
+  const isWidthGreaterThanXL = useMediaQuery(theme.breakpoints.up("xl"));
+  const isWidthLessThanXL = useMediaQuery(theme.breakpoints.down("xl"));
+  const chartHeight = isWidthGreaterThanLG && isWidthLessThanXL ? 335 : 312;
   const chartData = {
     series: subjectDistribution.map(
       (subject: { count: number }) => subject.count
@@ -99,7 +105,7 @@ const Statistics = () => {
       ),
       colors: ["#4BC0C0", "#36A2EB", "#FFCE56", "#FF6384", "#9966FF"],
       legend: {
-        show: true,
+        show: isWidthLessThanLg || isWidthGreaterThanXL,
       },
     },
   };
@@ -242,7 +248,7 @@ const Statistics = () => {
       },
     },
   };
-  const isXs = useMediaQuery((theme: Theme) => theme.breakpoints.down('xs'));
+  const isXs = useMediaQuery((theme: Theme) => theme.breakpoints.down("xs"));
 
   return (
     <Box>
@@ -251,7 +257,12 @@ const Statistics = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
-          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142d">
+          <Typography
+            variant="h1"
+            fontSize="2rem"
+            fontWeight={700}
+            color="#11142d"
+          >
             Statistics
           </Typography>
         </Stack>
@@ -283,11 +294,10 @@ const Statistics = () => {
                 <Chart
                   options={{
                     ...chartData.options,
-                    legend: { show: window.innerWidth >= 600 },
                   }}
                   series={chartData.series}
                   type="pie"
-                  height={330}
+                  height={chartHeight}
                 />
               </CardContent>
             </Card>
@@ -360,7 +370,7 @@ const Statistics = () => {
                 <StatisticCard
                   title="Average Weekly Hours"
                   value={`${averageWeeklyHour.toFixed(2)}`}
-                  border={isXs ? 'none' : '1px solid #ccc'}
+                  border={isXs ? "none" : "1px solid #ccc"}
                 />
                 <StatisticCard
                   title="Average Monthly Income"
