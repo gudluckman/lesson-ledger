@@ -91,10 +91,12 @@ const Statistics = () => {
   
   const theme = useTheme();
   const isWidthLessThanLg = useMediaQuery(theme.breakpoints.down("lg"));
+  const isWidthGreaterThanSm = useMediaQuery(theme.breakpoints.up("sm"));
   const isWidthGreaterThanLG = useMediaQuery(theme.breakpoints.up("lg"));
   const isWidthGreaterThanXL = useMediaQuery(theme.breakpoints.up("xl"));
   const isWidthLessThanXL = useMediaQuery(theme.breakpoints.down("xl"));
   const chartHeight = isWidthGreaterThanLG && isWidthLessThanXL ? 335 : 312;
+  
   const chartData = {
     series: subjectDistribution.map(
       (subject: { count: number }) => subject.count
@@ -105,7 +107,7 @@ const Statistics = () => {
       ),
       colors: ["#4BC0C0", "#36A2EB", "#FFCE56", "#FF6384", "#9966FF"],
       legend: {
-        show: isWidthLessThanLg || isWidthGreaterThanXL,
+        show: (isWidthLessThanLg || isWidthGreaterThanXL) && isWidthGreaterThanSm,
       },
     },
   };
