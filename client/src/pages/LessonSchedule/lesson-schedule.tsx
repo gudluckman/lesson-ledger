@@ -25,19 +25,23 @@ const LessonSchedule: React.FC = () => {
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
   );
 
+  const baseURL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:5005/api/v1"
+      : "https://lesson-ledger-api.vercel.app/api/v1";
+
+  console.log(baseURL)
+
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "https://lesson-ledger-api.vercel.app/api/v1/lessons/events"
-        // "http://localhost:5005/api/v1/lessons/events"
-      );
+      const response = await axios.get(`${baseURL}/lessons/events`);
       setEvents(response.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching events:", error);
       setLoading(false);
     }
-  }, []);
+  }, [baseURL]);
 
   useEffect(() => {
     fetchEvents();
@@ -125,7 +129,12 @@ const LessonSchedule: React.FC = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" gap={3}>
-          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142d">
+          <Typography
+            variant="h1"
+            fontSize="2rem"
+            fontWeight={700}
+            color="#11142d"
+          >
             This Week's Lessons
           </Typography>
           <CustomButton

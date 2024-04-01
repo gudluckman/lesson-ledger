@@ -1,14 +1,12 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 import cors from 'cors';
-import cron from 'node-cron';
 import connectDB from './mongodb/connect.js';
 import userRouter from './routes/user.routes.js';
 import studentRouter from './routes/student.routes.js';
 import calendarRouter from './routes/calendar.routes.js';
 import earningRouter from './routes/earning.route.js';
 import yearlyEarningRouter from './routes/yearly_earning.route.js';
-import { clearLessonsCache } from './controllers/calendar.controller.js';
 
 dotenv.config();
 
@@ -25,20 +23,6 @@ app.use('/api/v1/students', studentRouter);
 app.use('/api/v1/lessons', calendarRouter);
 app.use('/api/v1/earnings', earningRouter);
 app.use('/api/v1/yearly-earnings', yearlyEarningRouter);
-
-// Function to clear cache (Replace this with your cache clearing logic)
-const clearCache = () => {
-  // Call clearLessonsCache to clear the lessons cache
-  clearLessonsCache();
-  console.log('Cache cleared');
-};
-
-// Schedule the cache clearing task to run every Monday at midnight
-cron.schedule('0 0 * * 1', () => {
-  clearCache();
-}, {
-  timezone: 'Australia/Sydney'
-});
 
 const startServer = async () => {
   try {

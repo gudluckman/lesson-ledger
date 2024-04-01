@@ -32,13 +32,16 @@ const AllEarnings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const baseURL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:5005/api/v1"
+      : "https://lesson-ledger-api.vercel.app/api/v1";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://lesson-ledger-api.vercel.app/api/v1/earnings"
-          // "http://localhost:5005/api/v1/earnings"
+          `${baseURL}/earnings`
         );
         setAllEarnings(response.data);
         setLoading(false);
@@ -49,7 +52,7 @@ const AllEarnings: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [baseURL]);
 
   if (loading) {
     return <Typography>Loading...</Typography>;
