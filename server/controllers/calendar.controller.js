@@ -12,8 +12,6 @@ const jwtClient = new google.auth.JWT({
 // Initialize Google Calendar API
 const calendar = google.calendar({ version: "v3", auth: jwtClient });
 
-let lessonsCache = null;
-
 // Function to fetch weekly events from Google Calendar
 const fetchWeeklyEvents = async (req, res) => {
   try {
@@ -51,15 +49,12 @@ const fetchWeeklyEvents = async (req, res) => {
       maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
-      fields:
-        "items(colorId,summary,start,end,hangoutLink,description,attachments)",
+      fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
     const events = response.data.items.filter(
       (event) => event.colorId === "1" || event.colorId === "9"
     );
-
-    lessonsCache = events;
 
     res.json(events);
   } catch (error) {
@@ -68,10 +63,4 @@ const fetchWeeklyEvents = async (req, res) => {
   }
 };
 
-// Function to clear lessons cache
-const clearLessonsCache = () => {
-  lessonsCache = null;
-  console.log("Lessons cache cleared");
-};
-
-export { fetchWeeklyEvents, clearLessonsCache };
+export { fetchWeeklyEvents };
