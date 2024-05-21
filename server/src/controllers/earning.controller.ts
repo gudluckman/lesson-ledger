@@ -1,28 +1,44 @@
-import Earning from "../mongodb/models/earning.js";
-import User from "../mongodb/models/user.js";
-import YearlyEarning from "../mongodb/models/yearly_earning.js";
+import express from "express";
+import Earning from "../mongodb/models/earning";
+import User from "../mongodb/models/user";
+import YearlyEarning from "../mongodb/models/yearly_earning";
 
 import mongoose from "mongoose";
 
-const getAllEarnings = async (req, res) => {
+interface IRequest extends express.Request {
+  body: {
+    startDateOfWeek: Date;
+    endDateOfWeek: Date;
+    weeklyHours: number;
+    weeklyIncome: number;
+    email: string;
+  };
+}
+
+interface IMonthlyEarning {
+  month: string;
+  monthlyIncome: number;
+}
+
+const getAllEarnings = async (req: express.Request, res: express.Response) => {
   const { _end, _order, _start, _sort } = req.query;
 
   const query = {};
   const options = {
-    sort: { [_sort]: _order },
-    limit: parseInt(_end),
-    skip: parseInt(_start),
+    sort: { [_sort as string]: _order as string },
+    limit: parseInt(_end as string),
+    skip: parseInt(_start as string),
   };
 
   try {
     const count = await Earning.countDocuments(query);
     const earnings = await Earning.find(query, null, options);
 
-    res.header("x-total-count", count);
+    res.header("x-total-count", count.toString());
     res.header("Access-Control-Expose-Headers", "x-total-count");
 
     res.status(200).json(earnings);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -42,12 +58,11 @@ const months = [
   "December",
 ];
 
-const createEarning = async (req, res) => {
+const createEarning = async (req: IRequest, res: express.Response) => {
   try {
     const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome, email } =
       req.body;
 
-    // Convert weeklyIncome to a number type
     const weeklyIncomeNumber = Number(weeklyIncome);
 
     if (isNaN(weeklyIncomeNumber)) {
@@ -71,7 +86,6 @@ const createEarning = async (req, res) => {
     user.allEarnings.push(newEarning._id);
     await user.save({ session });
 
-    // Update Monthly and Yearly Earnings
     const endDate = new Date(endDateOfWeek);
     const currentYear = endDate.getFullYear().toString();
     const currentMonth = endDate.getMonth();
@@ -90,16 +104,13 @@ const createEarning = async (req, res) => {
       });
     }
 
-    // Get the current month's index (0 for January, 1 for February, ...)
     const currentMonthIndex = currentMonth;
 
-    // Find the monthly earnings for the current month
-    let monthlyEarning = yearlyEarning.monthlyEarnings.find(
+    let monthlyEarning: IMonthlyEarning | undefined = yearlyEarning.monthlyEarnings.find(
       (earning) => earning.month === months[currentMonthIndex]
     );
 
     if (!monthlyEarning) {
-      // If the monthly earnings for the current month don't exist, create them based on what the current weeklyincome is
       monthlyEarning = {
         month: months[currentMonthIndex],
         monthlyIncome: weeklyIncomeNumber,
@@ -107,7 +118,6 @@ const createEarning = async (req, res) => {
       yearlyEarning.monthlyEarnings.push(monthlyEarning);
     }
 
-    // Add the weekly income to the monthly income
     monthlyEarning.monthlyIncome += weeklyIncomeNumber;
     yearlyEarning.totalRevenue += weeklyIncomeNumber;
 
@@ -115,36 +125,35 @@ const createEarning = async (req, res) => {
     await session.commitTransaction();
 
     res.status(200).json({ message: "Earning Report created successfully" });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const deleteEarning = async (req, res) => {
+const deleteEarning = async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
 
-    const earningToDelete = await Earning.findByIdAndDelete({
-      _id: id,
-    }).populate("tutor");
+    const earningToDelete = await Earning.findByIdAndDelete(id).populate("tutor");
+
     if (!earningToDelete) throw new Error("Earning not found");
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    earningToDelete.remove({ session });
-    earningToDelete.tutor.allEarnings.pull(earningToDelete);
+    await earningToDelete.remove({ session });
+    await earningToDelete.tutor.allEarnings.pull(earningToDelete);
 
     await earningToDelete.tutor.save({ session });
     await session.commitTransaction();
 
     res.status(200).json({ message: "Earning deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const updateEarnings = async (req, res) => {
+const updateEarnings = async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
     const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome } =
@@ -156,7 +165,7 @@ const updateEarnings = async (req, res) => {
     );
 
     res.status(200).json({ message: "Earning updated successfully" });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };

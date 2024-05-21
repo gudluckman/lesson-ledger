@@ -1,11 +1,11 @@
-import { google } from "googleapis";
+import express from "express";
+import { google, calendar_v3 } from "googleapis";
 
 // Authenticate using the service account credentials
 const jwtClient = new google.auth.JWT({
-  email: process.env.CLIENT_EMAIL,
+  email: process.env.CLIENT_EMAIL as string,
   keyFile: "./service_account.json",
-  key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
-  // key: process.env.PRIVATE_KEY, // Uncomment this for testing
+  key: (process.env.PRIVATE_KEY as string).replace(/\\n/g, "\n"),
   scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
@@ -13,7 +13,7 @@ const jwtClient = new google.auth.JWT({
 const calendar = google.calendar({ version: "v3", auth: jwtClient });
 
 // Function to fetch weekly events from Google Calendar
-const fetchWeeklyEvents = async (req, res) => {
+const fetchWeeklyEvents = async (req: express.Request, res: express.Response) => {
   try {
     const today = new Date();
     const isSunday = today.getDay() === 0;
@@ -52,7 +52,7 @@ const fetchWeeklyEvents = async (req, res) => {
       fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
-    const events = response.data.items.filter(
+    const events = (response.data.items as calendar_v3.Schema$Event[]).filter(
       (event) => event.colorId === "1" || event.colorId === "9"
     );
 

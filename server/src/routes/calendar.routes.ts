@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchWeeklyEvents } from "../controllers/calendar.controller.js";
+import { fetchWeeklyEvents } from "../controllers/calendar.controller";
 
 const router = express.Router();
 
