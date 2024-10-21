@@ -30,7 +30,7 @@ const LessonSchedule: React.FC = () => {
       ? "http://localhost:5005/api/v1"
       : "https://lesson-ledger-api.vercel.app/api/v1";
 
-  console.log(baseURL)
+  console.log(baseURL);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -75,12 +75,15 @@ const LessonSchedule: React.FC = () => {
 
     // Calculate total sum and average hourly rate
     totalSum = events.reduce((acc: number, event: any) => {
-      const regex = /\$(\d+)/g;
-      const matches = event.description.match(regex);
-      if (matches) {
-        matches.forEach((match: any) => {
-          acc += parseInt(match.substring(1));
-        });
+      if (event.description) {
+        // Check if description is defined
+        const regex = /\$(\d+)/g;
+        const matches = event.description.match(regex);
+        if (matches) {
+          matches.forEach((match: any) => {
+            acc += parseInt(match.substring(1));
+          });
+        }
       }
       return acc;
     }, 0);
