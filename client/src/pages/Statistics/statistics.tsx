@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Box, Stack, Typography, Card, CardContent, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
@@ -12,6 +12,11 @@ import axios from "axios";
 import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
 import { Theme, useMediaQuery, useTheme } from "@pankod/refine-mui";
+interface WeeklyIncomeData {
+  weeklyIncome: number;
+  weeklyHours: number;
+  startDateOfWeek: string;
+}
 
 const baseURL =
   process.env.NODE_ENV === "development"
@@ -21,7 +26,7 @@ const baseURL =
 const Statistics = () => {
   const [subjectDistribution, setSubjectDistribution] = useState([]);
   const [yearGroupDistribution, setYearGroupDistribution] = useState([]);
-  const [weeklyIncomes, setWeeklyIncomes] = useState([]);
+  const [weeklyIncomes, setWeeklyIncomes] = useState<WeeklyIncomeData[]>([]);
 
   const [averageMonthlyIncome, setAverageMonthlyIncome] = useState<number>(0);
   const [averageWeeklyIncome, setAverageWeeklyIncome] = useState<number>(0);
@@ -51,44 +56,82 @@ const Statistics = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async (url: string, sortingFn: any, setData: any) => {
-      try {
-        const response = await axios.get(url);
-        const sortedData = sortingFn
-          ? response.data.sort(sortingFn)
-          : response.data;
-        setData(sortedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     const fetchAllData = async () => {
-      const urlsAndSetters = [
-        {
-          url: `${baseURL}/earnings`,
-          setter: setWeeklyIncomes,
-        },
-        {
-          url: `${baseURL}/students/statistics/subject-distribution`,
-          setter: setSubjectDistribution,
-          sortingFn: (a: { _id: string }, b: { _id: any }) =>
-            a._id.localeCompare(b._id),
-        },
-        {
-          url: `${baseURL}/students/statistics/year-group-distribution`,
-          setter: setYearGroupDistribution,
-          sortingFn: (a: { _id: string }, b: { _id: string }) =>
+      const fetchData = async (
+        url: string,
+        sortingFn: { (a: any, b: any): any; (a: any, b: any): number },
+        setData: {
+          (value: SetStateAction<never[]>): void;
+          (value: SetStateAction<never[]>): void;
+          (arg0: any): void;
+        }
+      ) => {
+        try {
+          const response = await axios.get(url);
+          const sortedData = sortingFn
+            ? response.data.sort(sortingFn)
+            : response.data;
+          setData(sortedData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      const aggregateWeeklyData = (data: any[]) => {
+        const aggregated = data.reduce<Record<string, WeeklyIncomeData>>(
+          (acc, curr) => {
+            const week = curr.startDateOfWeek;
+            if (!acc[week]) {
+              acc[week] = {
+                weeklyIncome: 0,
+                weeklyHours: 0,
+                startDateOfWeek: week,
+              };
+            }
+            acc[week].weeklyIncome += curr.weeklyIncome || 0;
+            acc[week].weeklyHours += curr.weeklyHours || 0;
+            return acc;
+          },
+          {}
+        );
+
+        // Convert aggregated data into an array sorted by date
+        return Object.entries(aggregated)
+          .map(([week, values]) => ({
+            ...values,
+          }))
+          .sort(
+            (a, b) =>
+              new Date(a.startDateOfWeek).getTime() -
+              new Date(b.startDateOfWeek).getTime()
+          );
+      };
+
+      const fetchAndAggregateData = async () => {
+        try {
+          const earningsResponse = await axios.get(`${baseURL}/earnings`);
+          const aggregatedData = aggregateWeeklyData(earningsResponse.data);
+          setWeeklyIncomes(aggregatedData);
+        } catch (error) {
+          console.error("Error fetching and aggregating data:", error);
+        }
+      };
+
+      await Promise.all([
+        fetchAndAggregateData(),
+        fetchData(
+          `${baseURL}/students/statistics/subject-distribution`,
+          (a, b) => a._id.localeCompare(b._id),
+          setSubjectDistribution
+        ),
+        fetchData(
+          `${baseURL}/students/statistics/year-group-distribution`,
+          (a, b) =>
             parseInt(a._id.replace(/\D/g, "")) -
             parseInt(b._id.replace(/\D/g, "")),
-        },
-      ];
-
-      const fetchRequests = urlsAndSetters.map(({ url, setter, sortingFn }) =>
-        fetchData(url, sortingFn, setter)
-      );
-
-      await Promise.all(fetchRequests);
+          setYearGroupDistribution
+        ),
+      ]);
     };
 
     fetchAllData();
