@@ -107,8 +107,6 @@ const createEarning = async (req, res) => {
       yearlyEarning.monthlyEarnings.push(monthlyEarning);
     }
 
-    // Add the weekly income to the monthly income
-    monthlyEarning.monthlyIncome += weeklyIncomeNumber;
     yearlyEarning.totalRevenue += weeklyIncomeNumber;
 
     await yearlyEarning.save({ session });

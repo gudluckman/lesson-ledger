@@ -27,7 +27,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const AllEarnings: React.FC = () => {
   const navigate = useNavigate();
-  const currentYear = new Date().getFullYear();
   const [allEarnings, setAllEarnings] = useState<EarningProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -95,7 +94,7 @@ const AllEarnings: React.FC = () => {
         <Stack direction="column" width="100%">
           <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
             {allEarnings.length
-              ? `All Earnings (${currentYear})`
+              ? "All Earnings"
               : "There are no earnings"}
           </Typography>
           <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>

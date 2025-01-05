@@ -1,15 +1,13 @@
 import { ApexOptions } from "apexcharts";
 
-export let TotalRevenueSeries = [
+export let TotalRevenueSeries: { name: string; data: number[] }[] = [
   {
-    name: "2024",
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    name: new Date().getFullYear().toString(),
+    data: Array(12).fill(0),
   },
   {
-    name: "2023",
-    data: [
-      300, 300, 385, 410, 420, 721.5, 1050.5, 1073.5, 2345, 2016, 1237, 1360,
-    ],
+    name: (new Date().getFullYear() - 1).toString(),
+    data: Array(12).fill(0),
   },
 ];
 
@@ -92,7 +90,9 @@ fetch(`${baseURL}/yearly-earnings`)
     // Process the fetched data and update TotalRevenueSeries
     data.forEach((yearlyEarning: any) => {
       const year = yearlyEarning.year.toString();
-      const yearIndex = year === "2023" ? 1 : 0;
+      const currentYear = new Date().getFullYear();
+      const previousYear = (currentYear - 1).toString();
+      const yearIndex = year === previousYear ? 1 : 0;
 
       // Update the monthly earnings data for the corresponding year
       yearlyEarning.monthlyEarnings.forEach(
