@@ -34,9 +34,9 @@ const Statistics = () => {
 
   useEffect(() => {
     // Retrieve average income from local storage
-    const currentYear = new Date().getFullYear();
+    // const currentYear = new Date().getFullYear();
     const averageIncomeFromLocalStorage = localStorage.getItem(
-      `averageIncome_${currentYear}`
+      "averageIncome_allYears"
     );
     if (averageIncomeFromLocalStorage) {
       setAverageMonthlyIncome(parseFloat(averageIncomeFromLocalStorage));
@@ -314,7 +314,7 @@ const Statistics = () => {
             fontWeight={700}
             color="#11142d"
           >
-            Statistics
+            Statistics (All Time)
           </Typography>
         </Stack>
         <Grid container spacing={3} justifyContent="center" alignItems="center">

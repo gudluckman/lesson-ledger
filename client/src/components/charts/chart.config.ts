@@ -78,7 +78,7 @@ const baseURL =
     ? "http://localhost:5005/api/v1"
     : "https://lesson-ledger-api.vercel.app/api/v1";
 
-    // Fetch yearly earnings data from the API
+// Fetch yearly earnings data from the API
 fetch(`${baseURL}/yearly-earnings`)
   .then((response) => {
     if (!response.ok) {
@@ -87,6 +87,9 @@ fetch(`${baseURL}/yearly-earnings`)
     return response.json();
   })
   .then((data) => {
+    let totalIncome = 0;
+    let totalMonths = 0;
+
     // Process the fetched data and update TotalRevenueSeries
     data.forEach((yearlyEarning: any) => {
       const year = yearlyEarning.year.toString();
@@ -102,19 +105,18 @@ fetch(`${baseURL}/yearly-earnings`)
         }
       );
 
-      // Calculate average monthly income
-      const monthlyIncomes = yearlyEarning.monthlyEarnings.map(
-        (monthlyEarning: any) => monthlyEarning.monthlyIncome
-      );
-      const totalIncome = monthlyIncomes.reduce(
-        (acc: number, income: number) => acc + income,
-        0
-      );
-      const averageIncome = totalIncome / monthlyIncomes.length;
-
-      // Store average monthly income in local storage
-      localStorage.setItem(`averageIncome_${year}`, averageIncome.toString());
+      // Accumulate total income and total months
+      yearlyEarning.monthlyEarnings.forEach((monthlyEarning: any) => {
+        totalIncome += monthlyEarning.monthlyIncome;
+        totalMonths += 1;
+      });
     });
+
+    // Calculate average monthly income across all years
+    const averageIncome = totalIncome / totalMonths;
+
+    // Store average monthly income in local storage
+    localStorage.setItem("averageIncome_allYears", averageIncome.toString());
   })
   .catch((error) => {
     console.error("Error fetching yearly earnings:", error);

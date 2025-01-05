@@ -6,16 +6,30 @@ import { useEffect, useState } from "react";
 
 const TotalRevenue = () => {
   const [totalRevenue, setTotalRevenue] = useState(0);
-
+  const baseURL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5005/api/v1"
+    : "https://lesson-ledger-api.vercel.app/api/v1";
+    
   useEffect(() => {
-    // Retrieve totalRevenue from localStorage
-    const storedTotalRevenue = localStorage.getItem("totalRevenue");
+    const fetchYearlyEarnings = async () => {
+      try {
+        const response = await fetch(`${baseURL}/yearly-earnings`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch yearly earnings");
+        }
+        const data = await response.json();
+        const sumOfYearlyEarnings = data.reduce((sum: any, item: { totalRevenue: any; }) => sum + item.totalRevenue, 0);
 
-    // Update state with the retrieved totalRevenue
-    if (storedTotalRevenue) {
-      setTotalRevenue(parseFloat(storedTotalRevenue));
-    }
-  }, []);
+        // Update state with the new total revenue
+        setTotalRevenue(sumOfYearlyEarnings);
+      } catch (error) {
+        console.error("Error fetching yearly earnings:", error);
+      }
+    };
+
+    fetchYearlyEarnings();
+  }, [baseURL]);
   const localStorageKeys = Object.keys(localStorage);
 
   // Iterate over the keys

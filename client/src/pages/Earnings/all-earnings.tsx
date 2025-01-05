@@ -14,8 +14,9 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  IconButton,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
 import { EarningProps } from "../../interfaces/earning";
@@ -53,6 +54,15 @@ const AllEarnings: React.FC = () => {
     fetchData();
   }, [baseURL]);
 
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`${baseURL}/earnings/${id}`);
+      setAllEarnings(allEarnings.filter((earning) => earning._id !== id));
+    } catch (error) {
+      console.error("Error deleting earning:", error);
+    }
+  };
+
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -88,13 +98,13 @@ const AllEarnings: React.FC = () => {
   return (
     <Box>
       <Helmet>
-        <title>All Earnings</title>
+        <title>Earnings</title>
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
           <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
             {allEarnings.length
-              ? "All Earnings"
+              ? "Earnings (All Time)"
               : "There are no earnings"}
           </Typography>
           <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
@@ -212,6 +222,10 @@ const AllEarnings: React.FC = () => {
                     Income
                   </Typography>
                 </TableCell>
+                <TableCell
+                  align="center"
+                  style={{ width: "50px" }}
+                />
               </StyledTableRow>
 
               {earningsToShow.map((earning) => (
@@ -224,6 +238,14 @@ const AllEarnings: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">{earning.weeklyHours}</TableCell>
                   <TableCell align="center">${earning.weeklyIncome}</TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={() => handleDelete(earning._id)}
+                      color="error"
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

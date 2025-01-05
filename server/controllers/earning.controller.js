@@ -105,6 +105,8 @@ const createEarning = async (req, res) => {
         monthlyIncome: weeklyIncomeNumber,
       };
       yearlyEarning.monthlyEarnings.push(monthlyEarning);
+    } else {
+      monthlyEarning.monthlyIncome += weeklyIncomeNumber;
     }
 
     yearlyEarning.totalRevenue += weeklyIncomeNumber;
@@ -122,7 +124,7 @@ const deleteEarning = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const earningToDelete = await Earning.findByIdAndDelete({
+    const earningToDelete = await Earning.findById({
       _id: id,
     }).populate("tutor");
     if (!earningToDelete) throw new Error("Earning not found");
@@ -134,6 +136,34 @@ const deleteEarning = async (req, res) => {
     earningToDelete.tutor.allEarnings.pull(earningToDelete);
 
     await earningToDelete.tutor.save({ session });
+
+    // Update Yearly Earnings
+    const endDate = new Date(earningToDelete.endDateOfWeek);
+    const currentYear = endDate.getFullYear().toString();
+    const currentMonth = endDate.getMonth();
+
+    let yearlyEarning = await YearlyEarning.findOne({
+      year: currentYear,
+      tutor: earningToDelete.tutor._id,
+    }).session(session);
+
+    if (yearlyEarning) {
+      const currentMonthIndex = currentMonth;
+      let monthlyEarning = yearlyEarning.monthlyEarnings.find(
+        (earning) => earning.month === months[currentMonthIndex]
+      );
+
+      if (monthlyEarning) {
+        monthlyEarning.monthlyIncome -= earningToDelete.weeklyIncome;
+        if (monthlyEarning.monthlyIncome < 0) monthlyEarning.monthlyIncome = 0;
+      }
+
+      yearlyEarning.totalRevenue -= earningToDelete.weeklyIncome;
+      if (yearlyEarning.totalRevenue < 0) yearlyEarning.totalRevenue = 0;
+
+      await yearlyEarning.save({ session });
+    }
+
     await session.commitTransaction();
 
     res.status(200).json({ message: "Earning deleted successfully" });
