@@ -1,11 +1,11 @@
-import Student from "../mongodb/models/student.js";
-import User, { IUser } from "../mongodb/models/user.js";
+import Student from "../mongodb/models/student";
+import User, { IUser } from "../mongodb/models/user";
 
 import mongoose, { FilterQuery } from "mongoose";
 import { Request, Response } from "express";
-import { getErrorMessage } from "../utils/error.js";
-import { IStudent } from "../mongodb/models/student.js";
-import { getQueryNumber, getQueryString } from "../utils/query.js";
+import { getErrorMessage } from "../utils/error";
+import { IStudent } from "../mongodb/models/student";
+import { getQueryNumber, getQueryString } from "../utils/query";
 
 type PopulatedTutor = Omit<IStudent, "tutor"> & { tutor: IUser };
 

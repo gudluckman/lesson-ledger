@@ -1,7 +1,7 @@
-import User from '../mongodb/models/user.js';
+import User from '../mongodb/models/user';
 import { Request, Response } from 'express';
-import { getErrorMessage } from '../utils/error.js';
-import { getQueryNumber } from '../utils/query.js';
+import { getErrorMessage } from '../utils/error';
+import { getQueryNumber } from '../utils/query';
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {

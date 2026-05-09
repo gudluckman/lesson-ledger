@@ -6,7 +6,7 @@ import {
   getAllEarnings,
   rebuildYearlyEarnings,
   updateEarnings,
-} from "../controllers/earning.controller.js";
+} from "../controllers/earning.controller";
 
 const router = express.Router();
 

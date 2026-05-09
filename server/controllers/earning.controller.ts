@@ -1,12 +1,12 @@
-import Earning from "../mongodb/models/earning.js";
-import User, { IUser } from "../mongodb/models/user.js";
-import YearlyEarning from "../mongodb/models/yearly_earning.js";
+import Earning from "../mongodb/models/earning";
+import User, { IUser } from "../mongodb/models/user";
+import YearlyEarning from "../mongodb/models/yearly_earning";
 
 import mongoose, { ClientSession, Types } from "mongoose";
 import { Request, Response } from "express";
-import { getErrorMessage } from "../utils/error.js";
-import { IEarning } from "../mongodb/models/earning.js";
-import { getQueryNumber, getQueryString } from "../utils/query.js";
+import { getErrorMessage } from "../utils/error";
+import { IEarning } from "../mongodb/models/earning";
+import { getQueryNumber, getQueryString } from "../utils/query";
 
 type PopulatedTutorEarning = Omit<IEarning, "tutor"> & { tutor: IUser };
 

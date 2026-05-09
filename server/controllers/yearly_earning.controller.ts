@@ -1,8 +1,8 @@
-import YearlyEarning from "../mongodb/models/yearly_earning.js";
-import User from "../mongodb/models/user.js";
+import YearlyEarning from "../mongodb/models/yearly_earning";
+import User from "../mongodb/models/user";
 import { Request, Response } from "express";
-import { getErrorMessage } from "../utils/error.js";
-import { getQueryNumber, getQueryString } from "../utils/query.js";
+import { getErrorMessage } from "../utils/error";
+import { getQueryNumber, getQueryString } from "../utils/query";
 
 const getYearlyEarning = async (req: Request, res: Response) => {
     const { _end, _order, _start, _sort } = req.query;
