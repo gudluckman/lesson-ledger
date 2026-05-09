@@ -1,7 +1,8 @@
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useMemo, useState } from "react";
 import { Box, Stack, Typography, Card, CardContent, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
+import { useGetIdentity } from "@pankod/refine-core";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import GroupsIcon from "@mui/icons-material/Groups";
 import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
@@ -12,18 +13,62 @@ import axios from "axios";
 import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
 import { Theme, useMediaQuery, useTheme } from "@pankod/refine-mui";
+import { API_BASE_URL } from "utils/api";
 interface WeeklyIncomeData {
   weeklyIncome: number;
   weeklyHours: number;
   startDateOfWeek: string;
 }
 
-const baseURL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5005/api/v1"
-    : "https://lesson-ledger-api.vercel.app/api/v1";
+const baseURL = API_BASE_URL;
+const compactCurrency = new Intl.NumberFormat("en-AU", {
+  currency: "AUD",
+  maximumFractionDigits: 0,
+  style: "currency",
+});
+
+const formatWeekLabel = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+  });
+
+const getMovingAverage = (values: number[], windowSize = 4) =>
+  values.map((_, index) => {
+    const windowValues = values.slice(Math.max(0, index - windowSize + 1), index + 1);
+    const total = windowValues.reduce((sum, value) => sum + value, 0);
+    return Number((total / windowValues.length).toFixed(2));
+  });
+
+const getTrendSummary = (values: number[]) => {
+  const total = values.reduce((sum, value) => sum + value, 0);
+
+  return {
+    average: values.length ? total / values.length : 0,
+    best: values.length ? Math.max(...values) : 0,
+    latest: values.length ? values[values.length - 1] : 0,
+  };
+};
+
+const TrendMetric = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) => (
+  <Box>
+    <Typography fontSize={12} color="#6b7280">
+      {label}
+    </Typography>
+    <Typography fontSize={18} fontWeight={700} color="#11142d">
+      {value}
+    </Typography>
+  </Box>
+);
 
 const Statistics = () => {
+  const { data: user } = useGetIdentity();
   const [subjectDistribution, setSubjectDistribution] = useState([]);
   const [yearGroupDistribution, setYearGroupDistribution] = useState([]);
   const [weeklyIncomes, setWeeklyIncomes] = useState<WeeklyIncomeData[]>([]);
@@ -109,7 +154,10 @@ const Statistics = () => {
 
       const fetchAndAggregateData = async () => {
         try {
-          const earningsResponse = await axios.get(`${baseURL}/earnings`);
+          const query = user?.email
+            ? `?email=${encodeURIComponent(user.email)}`
+            : "";
+          const earningsResponse = await axios.get(`${baseURL}/earnings${query}`);
           const aggregatedData = aggregateWeeklyData(earningsResponse.data);
           setWeeklyIncomes(aggregatedData);
         } catch (error) {
@@ -135,7 +183,7 @@ const Statistics = () => {
     };
 
     fetchAllData();
-  }, []);
+  }, [user?.email]);
 
   const theme = useTheme();
   const isWidthLessThanLg = useMediaQuery(theme.breakpoints.down("lg"));
@@ -144,6 +192,26 @@ const Statistics = () => {
   const isWidthGreaterThanXL = useMediaQuery(theme.breakpoints.up("xl"));
   const isWidthLessThanXL = useMediaQuery(theme.breakpoints.down("xl"));
   const chartHeight = isWidthGreaterThanLG && isWidthLessThanXL ? 335 : 312;
+  const weeklyIncomeValues = useMemo(
+    () => weeklyIncomes.map((income) => Number(income.weeklyIncome) || 0),
+    [weeklyIncomes]
+  );
+  const weeklyHourValues = useMemo(
+    () => weeklyIncomes.map((income) => Number(income.weeklyHours) || 0),
+    [weeklyIncomes]
+  );
+  const weeklyCategories = useMemo(
+    () => weeklyIncomes.map((income) => income.startDateOfWeek),
+    [weeklyIncomes]
+  );
+  const incomeSummary = useMemo(
+    () => getTrendSummary(weeklyIncomeValues),
+    [weeklyIncomeValues]
+  );
+  const hoursSummary = useMemo(
+    () => getTrendSummary(weeklyHourValues),
+    [weeklyHourValues]
+  );
 
   const chartData = {
     series: subjectDistribution.map(
@@ -211,45 +279,71 @@ const Statistics = () => {
   const lineChartIncomeData = {
     series: [
       {
-        name: "Income",
-        data: weeklyIncomes.map(
-          (income: { weeklyIncome: number }) => income.weeklyIncome
-        ),
+        name: "Weekly Income",
+        type: "column",
+        data: weeklyIncomeValues,
+      },
+      {
+        name: "4 Week Average",
+        type: "line",
+        data: getMovingAverage(weeklyIncomeValues),
       },
     ],
     options: {
       chart: {
         height: 300,
-        type: "area",
+        type: "line",
         toolbar: {
           show: false,
         },
       },
+      colors: ["#06c258", "#11142d"],
       stroke: {
-        width: 3,
+        width: [0, 3],
         curve: "smooth",
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          columnWidth: "52%",
+        },
       },
       dataLabels: {
         enabled: false,
       },
+      grid: {
+        borderColor: "#edf0f5",
+      },
       xaxis: {
         type: "datetime",
-        categories: weeklyIncomes.map(
-          (income: { startDateOfWeek: string }) => income.startDateOfWeek
-        ),
+        categories: weeklyCategories,
         labels: {
-          show: false,
-          format: "dd/MM/yyyy",
+          formatter: (value: string) => formatWeekLabel(value),
+          rotate: -35,
+          hideOverlappingLabels: true,
         },
+        tickAmount: Math.min(8, weeklyCategories.length),
       },
       yaxis: {
+        labels: {
+          formatter: (value: number) => compactCurrency.format(value),
+        },
         title: {
-          text: "Income per week",
+          text: "Weekly income",
         },
       },
-      colors: ["#06c258"],
       legend: {
-        show: false,
+        position: "top",
+        horizontalAlign: "right",
+      },
+      tooltip: {
+        shared: true,
+        x: {
+          formatter: (value: number) => formatWeekLabel(new Date(value).toISOString()),
+        },
+        y: {
+          formatter: (value: number) => compactCurrency.format(value),
+        },
       },
     },
   };
@@ -257,45 +351,71 @@ const Statistics = () => {
   const lineChartHoursData = {
     series: [
       {
-        name: "Hours",
-        data: weeklyIncomes.map(
-          (income: { weeklyHours: number }) => income.weeklyHours
-        ),
+        name: "Weekly Hours",
+        type: "column",
+        data: weeklyHourValues,
+      },
+      {
+        name: "4 Week Average",
+        type: "line",
+        data: getMovingAverage(weeklyHourValues),
       },
     ],
     options: {
       chart: {
         height: 300,
-        type: "area",
+        type: "line",
         toolbar: {
           show: false,
         },
       },
+      colors: ["#29bbff", "#11142d"],
       stroke: {
-        width: 3,
+        width: [0, 3],
         curve: "smooth",
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          columnWidth: "52%",
+        },
       },
       dataLabels: {
         enabled: false,
       },
+      grid: {
+        borderColor: "#edf0f5",
+      },
       xaxis: {
         type: "datetime",
-        categories: weeklyIncomes.map(
-          (income: { startDateOfWeek: string }) => income.startDateOfWeek
-        ),
+        categories: weeklyCategories,
         labels: {
-          show: false,
-          format: "dd/MM/yyyy",
+          formatter: (value: string) => formatWeekLabel(value),
+          rotate: -35,
+          hideOverlappingLabels: true,
         },
+        tickAmount: Math.min(8, weeklyCategories.length),
       },
       yaxis: {
+        labels: {
+          formatter: (value: number) => `${value.toFixed(0)}h`,
+        },
         title: {
-          text: "Income per week",
+          text: "Weekly hours",
         },
       },
-      colors: ["#29bbff"],
       legend: {
-        show: false,
+        position: "top",
+        horizontalAlign: "right",
+      },
+      tooltip: {
+        shared: true,
+        x: {
+          formatter: (value: number) => formatWeekLabel(new Date(value).toISOString()),
+        },
+        y: {
+          formatter: (value: number) => `${value.toFixed(2)} hours`,
+        },
       },
     },
   };
@@ -455,10 +575,24 @@ const Statistics = () => {
                     Weekly Income Trends
                   </Typography>
                 </Stack>
+                <Stack direction="row" gap={4} flexWrap="wrap" mt={2} mb={1}>
+                  <TrendMetric
+                    label="Latest Week"
+                    value={compactCurrency.format(incomeSummary.latest)}
+                  />
+                  <TrendMetric
+                    label="Average Week"
+                    value={compactCurrency.format(incomeSummary.average)}
+                  />
+                  <TrendMetric
+                    label="Best Week"
+                    value={compactCurrency.format(incomeSummary.best)}
+                  />
+                </Stack>
                 <ReactApexChart
                   options={lineChartIncomeData.options as ApexOptions}
                   series={lineChartIncomeData.series}
-                  type="area"
+                  type="line"
                   width="100%"
                   height={300}
                 />
@@ -488,10 +622,24 @@ const Statistics = () => {
                     Weekly Hours Trends
                   </Typography>
                 </Stack>
+                <Stack direction="row" gap={4} flexWrap="wrap" mt={2} mb={1}>
+                  <TrendMetric
+                    label="Latest Week"
+                    value={`${hoursSummary.latest.toFixed(2)}h`}
+                  />
+                  <TrendMetric
+                    label="Average Week"
+                    value={`${hoursSummary.average.toFixed(2)}h`}
+                  />
+                  <TrendMetric
+                    label="Best Week"
+                    value={`${hoursSummary.best.toFixed(2)}h`}
+                  />
+                </Stack>
                 <ReactApexChart
                   options={lineChartHoursData.options as ApexOptions}
                   series={lineChartHoursData.series}
-                  type="area"
+                  type="line"
                   width="100%"
                   height={300}
                 />

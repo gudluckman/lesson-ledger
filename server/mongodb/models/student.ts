@@ -1,4 +1,24 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
+
+export interface IStudent extends Document {
+  studentName: string;
+  parentName: string;
+  gender: string;
+  year: string;
+  subject: string;
+  baseRate: number;
+  sessionHoursPerWeek: number;
+  day?: string;
+  startTime?: string;
+  endTime?: string;
+  delivery: string;
+  status: string;
+  sessionType?: string;
+  sessionMode: string;
+  contactNumber: string;
+  source?: string;
+  tutor?: Types.ObjectId;
+}
 
 const StudentSchema = new mongoose.Schema({
   studentName: { type: String, required: true },
@@ -22,6 +42,6 @@ const StudentSchema = new mongoose.Schema({
   tutor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
-const studentModel = mongoose.model('Student', StudentSchema);
+const studentModel = mongoose.model<IStudent>('Student', StudentSchema);
 
 export default studentModel;

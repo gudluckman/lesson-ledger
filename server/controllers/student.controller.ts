@@ -1,9 +1,15 @@
-import Student from "../mongodb/models/student.js";
-import User from "../mongodb/models/user.js";
+import Student from "../mongodb/models/student";
+import User, { IUser } from "../mongodb/models/user";
 
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
+import { Request, Response } from "express";
+import { getErrorMessage } from "../utils/error";
+import { IStudent } from "../mongodb/models/student";
+import { getQueryNumber, getQueryString } from "../utils/query";
 
-const getAllStudents = async (req, res) => {
+type PopulatedTutor = Omit<IStudent, "tutor"> & { tutor: IUser };
+
+const getAllStudents = async (req: Request, res: Response) => {
   const {
     _end,
     _order,
@@ -12,8 +18,12 @@ const getAllStudents = async (req, res) => {
     subject_like = "",
     year = "",
   } = req.query;
+  const sortField = getQueryString(_sort);
+  const sortOrder = getQueryString(_order);
+  const limit = getQueryNumber(_end);
+  const skip = getQueryNumber(_start);
 
-  const query = {};
+  const query: FilterQuery<IStudent> = {};
 
   if (year !== "") {
     query.year = year;
@@ -27,21 +37,27 @@ const getAllStudents = async (req, res) => {
   try {
     const count = await Student.countDocuments(query);
 
-    const students = await Student.find(query)
-      .limit(parseInt(_end))
-      .skip(parseInt(_start))
-      .sort({ [_sort]: _order });
+    let studentsQuery = Student.find(query);
+    if (limit !== undefined) studentsQuery = studentsQuery.limit(limit);
+    if (skip !== undefined) studentsQuery = studentsQuery.skip(skip);
+    if (sortField) {
+      studentsQuery = studentsQuery.sort({
+        [sortField]: sortOrder === "desc" ? -1 : 1,
+      });
+    }
 
-    res.header("x-total-count", count);
+    const students = await studentsQuery;
+
+    res.header("x-total-count", count.toString());
     res.header("Access-Control-Expose-Headers", "x-total-count");
 
     res.status(200).json(students);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: getErrorMessage(error) });
   }
 };
 
-const getSubjectYearStatistics = async (req, res) => {
+const getSubjectYearStatistics = async (_req: Request, res: Response) => {
   try {
     const subjects = await Student.aggregate([
       {
@@ -54,11 +70,11 @@ const getSubjectYearStatistics = async (req, res) => {
 
     res.status(200).json(subjects);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: getErrorMessage(error) });
   }
 }
 
-const getSubjectDistribution = async (req, res) => {
+const getSubjectDistribution = async (_req: Request, res: Response) => {
   try {
     const subjects = await Student.aggregate([
       {
@@ -77,11 +93,11 @@ const getSubjectDistribution = async (req, res) => {
 
     res.status(200).json(subjects);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: getErrorMessage(error) });
   }
 };
 
-const getYearGroupDistribution = async (req, res) => {
+const getYearGroupDistribution = async (_req: Request, res: Response) => {
   try {
     const years = await Student.aggregate([
       {
@@ -94,11 +110,11 @@ const getYearGroupDistribution = async (req, res) => {
 
     res.status(200).json(years);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: getErrorMessage(error) });
   }
 };
 
-const getStudentDetail = async (req, res) => {
+const getStudentDetail = async (req: Request, res: Response) => {
   const { id } = req.params;
   const studentExist = await Student.findOne({ _id: id }).populate("tutor");
 
@@ -109,7 +125,9 @@ const getStudentDetail = async (req, res) => {
   }
 };
 
-const createStudent = async (req, res) => {
+const createStudent = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
+
   try {
     const {
       studentName,
@@ -131,32 +149,36 @@ const createStudent = async (req, res) => {
       email,
     } = req.body;
 
-    const session = await mongoose.startSession();
     session.startTransaction();
 
     const user = await User.findOne({ email }).session(session);
 
     if (!user) throw new Error("User not found");
 
-    const newStudent = await Student.create({
-      studentName,
-      parentName,
-      gender,
-      year,
-      subject,
-      baseRate,
-      sessionHoursPerWeek,
-      day,
-      startTime,
-      endTime,
-      delivery,
-      status,
-      sessionType,
-      sessionMode,
-      contactNumber,
-      source,
-      tutor: user._id,
-    });
+    const [newStudent] = await Student.create(
+      [
+        {
+          studentName,
+          parentName,
+          gender,
+          year,
+          subject,
+          baseRate,
+          sessionHoursPerWeek,
+          day,
+          startTime,
+          endTime,
+          delivery,
+          status,
+          sessionType,
+          sessionMode,
+          contactNumber,
+          source,
+          tutor: user._id,
+        },
+      ],
+      { session }
+    );
 
     user.allStudents.push(newStudent._id);
     await user.save({ session });
@@ -165,11 +187,16 @@ const createStudent = async (req, res) => {
 
     res.status(200).json({ message: "Student created successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    res.status(500).json({ message: getErrorMessage(error) });
+  } finally {
+    session.endSession();
   }
 };
 
-const updateStudent = async (req, res) => {
+const updateStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const {
@@ -215,32 +242,38 @@ const updateStudent = async (req, res) => {
 
     res.status(200).json({ message: "Student updated successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: getErrorMessage(error) });
   }
 };
 
-const deleteStudent = async (req, res) => {
+const deleteStudent = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
+
   try {
     const { id } = req.params;
 
-    const studentToDelete = await Student.findById({ _id: id }).populate(
+    const studentToDelete = await Student.findById({ _id: id }).populate<{ tutor: IUser }>(
       "tutor"
-    );
+    ) as PopulatedTutor | null;
 
     if (!studentToDelete) throw new Error("Student not found");
 
-    const session = await mongoose.startSession();
     session.startTransaction();
 
-    studentToDelete.remove({ session });
-    studentToDelete.tutor.allStudents.pull(studentToDelete);
+    await Student.deleteOne({ _id: id }).session(session);
+    studentToDelete.tutor.allStudents.pull(studentToDelete._id);
 
     await studentToDelete.tutor.save({ session });
     await session.commitTransaction();
 
     res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    res.status(500).json({ message: getErrorMessage(error) });
+  } finally {
+    session.endSession();
   }
 };
 

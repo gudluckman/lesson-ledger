@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Stack } from "@mui/material";
 import axios from "axios";
 import { SubjectData, ProgressBarProps } from "interfaces/subject";
+import { API_BASE_URL } from "utils/api";
 
 
 const ProgressBar = ({ title, year, count, color }: ProgressBarProps) => (
@@ -35,10 +36,7 @@ const ProgressBar = ({ title, year, count, color }: ProgressBarProps) => (
 
 export const SubjectCount = () => {
   const [subjectData, setSubjectData] = useState<SubjectData[]>([]);
-  const baseURL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5005/api/v1"
-    : "https://lesson-ledger-api.vercel.app/api/v1";
+  const baseURL = API_BASE_URL;
 
   useEffect(() => {
     const fetchSubjectData = async () => {

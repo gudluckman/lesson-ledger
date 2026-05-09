@@ -9,7 +9,7 @@ import {
   getSubjectYearStatistics,
   getSubjectDistribution,
   getYearGroupDistribution
-} from "../controllers/student.controller.js";
+} from "../controllers/student.controller";
 
 const router = express.Router();
 

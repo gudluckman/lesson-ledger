@@ -17,6 +17,7 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import PaidIcon from "@mui/icons-material/Paid";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
+import { API_BASE_URL } from "utils/api";
 
 const LessonSchedule: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
@@ -25,12 +26,7 @@ const LessonSchedule: React.FC = () => {
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
   );
 
-  const baseURL =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:5005/api/v1"
-      : "https://lesson-ledger-api.vercel.app/api/v1";
-
-  console.log(baseURL);
+  const baseURL = API_BASE_URL;
 
   const fetchEvents = useCallback(async () => {
     try {
