@@ -26,6 +26,7 @@ import LessonSchedule from "pages/LessonSchedule/lesson-schedule";
 import AllEarnings from "pages/Earnings/all-earnings";
 import CreateEarnings from "pages/Earnings/create-earning";
 import Statistics from "pages/Statistics/statistics";
+import { API_BASE_URL } from "utils/api";
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
@@ -42,10 +43,7 @@ axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
 });
 
 function App() {
-  const baseURL =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:5005/api/v1"
-      : "https://lesson-ledger-api.vercel.app/api/v1";
+  const baseURL = API_BASE_URL;
 
   const authProvider: AuthProvider = {
     login: async ({ credential }: CredentialResponse) => {

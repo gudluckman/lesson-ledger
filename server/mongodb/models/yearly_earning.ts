@@ -1,6 +1,18 @@
 // models/yearly_earning.js
 
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
+
+export interface IMonthlyEarning {
+    month: string;
+    monthlyIncome: number;
+}
+
+export interface IYearlyEarning extends Document {
+    year: string;
+    monthlyEarnings: Types.DocumentArray<IMonthlyEarning>;
+    totalRevenue: number;
+    tutor?: Types.ObjectId;
+}
 
 // Define the MonthlyEarning schema
 const MonthlyEarningSchema = new mongoose.Schema({
@@ -9,7 +21,7 @@ const MonthlyEarningSchema = new mongoose.Schema({
 });
 
 // Define the YearlyEarning schema
-const YearlyEarningSchema = new mongoose.Schema({
+const YearlyEarningSchema = new mongoose.Schema<IYearlyEarning>({
     year: { type: String, required: true },
     monthlyEarnings: [MonthlyEarningSchema],
     totalRevenue: { type: Number, required: true },
@@ -17,6 +29,6 @@ const YearlyEarningSchema = new mongoose.Schema({
 });
 
 // Create the YearlyEarning model based on the YearlyEarningSchema
-const YearlyEarning = mongoose.model("YearlyEarning", YearlyEarningSchema);
+const YearlyEarning = mongoose.model<IYearlyEarning>("YearlyEarning", YearlyEarningSchema);
 
 export default YearlyEarning;

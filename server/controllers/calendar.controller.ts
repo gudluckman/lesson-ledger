@@ -1,11 +1,25 @@
 import { google } from "googleapis";
+import { Request, Response } from "express";
+
+const getGoogleCalendarAuthConfig = () => {
+  const privateKey = process.env.PRIVATE_KEY?.replace(/\\n/g, "\n");
+
+  if (privateKey && process.env.CLIENT_EMAIL) {
+    return {
+      email: process.env.CLIENT_EMAIL,
+      key: privateKey,
+    };
+  }
+
+  return {
+    keyFile:
+      process.env.GOOGLE_APPLICATION_CREDENTIALS || "./service_account.json",
+  };
+};
 
 // Authenticate using the service account credentials
 const jwtClient = new google.auth.JWT({
-  email: process.env.CLIENT_EMAIL,
-  keyFile: "./service_account.json",
-  key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n"),
-  // key: process.env.PRIVATE_KEY, // Uncomment this for testing
+  ...getGoogleCalendarAuthConfig(),
   scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
@@ -13,7 +27,7 @@ const jwtClient = new google.auth.JWT({
 const calendar = google.calendar({ version: "v3", auth: jwtClient });
 
 // Function to fetch weekly events from Google Calendar
-const fetchWeeklyEvents = async (req, res) => {
+const fetchWeeklyEvents = async (_req: Request, res: Response) => {
   try {
     const today = new Date();
     const isSunday = today.getDay() === 0;
@@ -52,7 +66,7 @@ const fetchWeeklyEvents = async (req, res) => {
       fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
-    const events = response.data.items.filter(
+    const events = (response.data.items ?? []).filter(
       (event) => event.colorId === "1" || event.colorId === "9"
     );
 
@@ -63,7 +77,7 @@ const fetchWeeklyEvents = async (req, res) => {
   }
 };
 
-const fetchNextWeeklyEvents = async (req, res) => {
+const fetchNextWeeklyEvents = async (_req: Request, res: Response) => {
   try {
     const today = new Date();
     const isSunday = today.getDay() === 0;
@@ -102,7 +116,7 @@ const fetchNextWeeklyEvents = async (req, res) => {
       fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
     });
 
-    const events = response.data.items.filter(
+    const events = (response.data.items ?? []).filter(
       (event) => event.colorId === "1" || event.colorId === "9"
     );
 

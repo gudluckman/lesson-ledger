@@ -7,6 +7,8 @@ import { CredentialResponse } from "../../interfaces/google";
 
 export const Login: React.FC = () => {
   const { mutate: login } = useLogin<CredentialResponse>();
+  const googleClientId =
+    process.env.REACT_APP_GOOGLE_CLIENT_ID || process.env.REACT_APP_API_KEY;
 
   const GoogleButton = (): JSX.Element => {
     const divRef = useRef<HTMLDivElement>(null);
@@ -19,7 +21,7 @@ export const Login: React.FC = () => {
       try {
         window.google.accounts.id.initialize({
           ux_mode: "popup",
-          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          client_id: googleClientId,
           callback: async (res: CredentialResponse) => {
             if (res.credential) {
               login(res);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useGetIdentity } from "@pankod/refine-core";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
 import { styled } from "@mui/system";
@@ -20,6 +21,7 @@ import { Add, Delete } from "@mui/icons-material";
 import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
 import { EarningProps } from "../../interfaces/earning";
+import { API_BASE_URL } from "utils/api";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
@@ -28,20 +30,21 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const AllEarnings: React.FC = () => {
   const navigate = useNavigate();
+  const { data: user } = useGetIdentity();
   const [allEarnings, setAllEarnings] = useState<EarningProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const baseURL =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:5005/api/v1"
-      : "https://lesson-ledger-api.vercel.app/api/v1";
+  const baseURL = API_BASE_URL;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const query = user?.email
+          ? `?email=${encodeURIComponent(user.email)}`
+          : "";
         const response = await axios.get(
-          `${baseURL}/earnings`
+          `${baseURL}/earnings${query}`
         );
         setAllEarnings(response.data);
         setLoading(false);
@@ -52,7 +55,7 @@ const AllEarnings: React.FC = () => {
     };
 
     fetchData();
-  }, [baseURL]);
+  }, [baseURL, user?.email]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -70,7 +73,7 @@ const AllEarnings: React.FC = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   // Sort earnings by startDateOfWeek by latest earning
-  const sortedEarnings = allEarnings.sort(
+  const sortedEarnings = [...allEarnings].sort(
     (a, b) =>
       new Date(b.startDateOfWeek).getTime() -
       new Date(a.startDateOfWeek).getTime()
@@ -88,12 +91,16 @@ const AllEarnings: React.FC = () => {
   localStorage.setItem("totalRevenue", totalEarnings.toString());
 
   // Calculate average weekly income
-  const averageWeeklyIncome = totalEarnings / allEarnings.length;
+  const averageWeeklyIncome = allEarnings.length
+    ? totalEarnings / allEarnings.length
+    : 0;
   localStorage.setItem("averageWeeklyIncome", averageWeeklyIncome.toString());
 
-  const averageWeeklyHours = totalHours / allEarnings.length;
+  const averageWeeklyHours = allEarnings.length
+    ? totalHours / allEarnings.length
+    : 0;
   localStorage.setItem("averageWeeklyHours", averageWeeklyHours.toString());
-  const averageHourlyRate = totalEarnings / totalHours;
+  const averageHourlyRate = totalHours ? totalEarnings / totalHours : 0;
 
   return (
     <Box>
