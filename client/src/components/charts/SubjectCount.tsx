@@ -3,6 +3,7 @@ import { Box, Typography, Stack } from "@mui/material";
 import axios from "axios";
 import { SubjectData, ProgressBarProps } from "interfaces/subject";
 import { API_BASE_URL } from "utils/api";
+import { getAuthHeaders } from "utils/auth";
 
 
 const ProgressBar = ({ title, year, count, color }: ProgressBarProps) => (
@@ -42,7 +43,8 @@ export const SubjectCount = () => {
     const fetchSubjectData = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/students/statistics/subject`
+          `${baseURL}/students/statistics/subject`,
+          { headers: getAuthHeaders() }
         );
         setSubjectData(response.data);
       } catch (error) {

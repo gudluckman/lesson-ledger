@@ -16,6 +16,9 @@ const EarningSchema = new mongoose.Schema({
     tutor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
+EarningSchema.index({ tutor: 1, startDateOfWeek: 1 });
+EarningSchema.index({ tutor: 1, endDateOfWeek: 1 });
+
 const earningModel = mongoose.model<IEarning>("Earning", EarningSchema);
 
 export default earningModel;

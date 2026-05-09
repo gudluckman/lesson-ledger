@@ -40,6 +40,19 @@ REACT_APP_API_URL=http://localhost:5005/api/v1
 
 Use `server/.env.example` and `client/.env.example` as templates.
 
+Required backend auth variables:
+
+```bash
+JWT_SECRET=replace-with-a-long-random-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+Users sign in with Google through `POST /api/v1/auth/google`. The API verifies
+the Google ID token, creates the user on first sign-in, then returns an app JWT.
+Private API routes use that JWT to scope students, earnings, yearly earnings,
+and statistics to the signed-in user. The frontend should not send ownership
+with `?email=...` or request bodies.
+
 For Google Calendar service account auth, choose one of these styles.
 
 Production/env style:
@@ -61,6 +74,11 @@ When `CLIENT_EMAIL` and `PRIVATE_KEY` are present, the server uses them. If they
 are not present, it falls back to `GOOGLE_APPLICATION_CREDENTIALS`, then
 `./service_account.json`. This means local and production environments can
 switch by changing env values, without editing `calendar.controller.js`.
+
+Calendar data is user-scoped. A user must have a `calendarId` saved on their
+user record before `/lessons/events` returns Google Calendar events. Without a
+calendar id, the API returns an empty schedule instead of falling back to another
+user's calendar. Calendar ids can be saved with `PATCH /api/v1/auth/me`.
 
 ## Server TypeScript Commands
 

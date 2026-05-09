@@ -18,14 +18,6 @@ type ApplyEarningToYearlyTotalInput = {
   direction?: 1 | -1;
 };
 
-const getUserQuery = async (req: Request) => {
-  const email = getQueryString(req.query.email);
-  if (!email) return {};
-
-  const user = await User.findOne({ email }).select("_id");
-  return user ? { tutor: user._id } : { tutor: null };
-};
-
 const getAllEarnings = async (req: Request, res: Response) => {
   const { _end, _order, _start, _sort } = req.query;
   const sortField = getQueryString(_sort);
@@ -34,7 +26,8 @@ const getAllEarnings = async (req: Request, res: Response) => {
   const skip = getQueryNumber(_start);
 
   try {
-    const query = await getUserQuery(req);
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
+    const query = { tutor: req.user._id };
     const options = {
       sort: sortField ? { [sortField]: sortOrder === "desc" ? -1 : 1 } : undefined,
       limit,
@@ -135,7 +128,7 @@ const createEarning = async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
 
   try {
-    const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome, email } =
+    const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome } =
       req.body;
 
     const weeklyHoursNumber = Number(weeklyHours);
@@ -151,7 +144,9 @@ const createEarning = async (req: Request, res: Response) => {
 
     session.startTransaction();
 
-    const user = await User.findOne({ email }).session(session);
+    if (!req.user) throw new Error("Authentication required");
+
+    const user = await User.findById(req.user._id).session(session);
     if (!user) throw new Error("User not found");
 
     const [newEarning] = await Earning.create(
@@ -194,15 +189,17 @@ const deleteEarning = async (req: Request, res: Response) => {
 
   try {
     const { id } = req.params;
+    if (!req.user) throw new Error("Authentication required");
 
-    const earningToDelete = await Earning.findById({
+    const earningToDelete = await Earning.findOne({
       _id: id,
+      tutor: req.user._id,
     }).populate<{ tutor: IUser }>("tutor") as PopulatedTutorEarning | null;
     if (!earningToDelete) throw new Error("Earning not found");
 
     session.startTransaction();
 
-    await Earning.deleteOne({ _id: id }).session(session);
+    await Earning.deleteOne({ _id: id, tutor: req.user._id }).session(session);
     earningToDelete.tutor.allEarnings.pull(earningToDelete._id);
 
     await earningToDelete.tutor.save({ session });
@@ -233,6 +230,7 @@ const updateEarnings = async (req: Request, res: Response) => {
 
   try {
     const { id } = req.params;
+    if (!req.user) throw new Error("Authentication required");
     const { startDateOfWeek, endDateOfWeek, weeklyHours, weeklyIncome } =
       req.body;
 
@@ -249,7 +247,10 @@ const updateEarnings = async (req: Request, res: Response) => {
 
     session.startTransaction();
 
-    const existingEarning = await Earning.findById(id).session(session);
+    const existingEarning = await Earning.findOne({
+      _id: id,
+      tutor: req.user._id,
+    }).session(session);
     if (!existingEarning) throw new Error("Earning not found");
     if (!existingEarning.tutor) throw new Error("Earning tutor not found");
 
@@ -291,11 +292,11 @@ const rebuildYearlyEarnings = async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
 
   try {
-    const { email } = req.body;
+    if (!req.user) throw new Error("Authentication required");
 
     session.startTransaction();
 
-    const user = await User.findOne({ email }).session(session);
+    const user = await User.findById(req.user._id).session(session);
     if (!user) throw new Error("User not found");
 
     await YearlyEarning.deleteMany({ tutor: user._id }).session(session);

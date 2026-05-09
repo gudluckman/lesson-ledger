@@ -1,15 +1,13 @@
-import { useGetIdentity } from '@pankod/refine-core';
 import { FieldValues, useForm } from '@pankod/refine-react-hook-form';
 import { Helmet } from 'react-helmet';
 import FormStudent from 'components/common/FormStudent';
 
 const CreateStudent = () => {
-  const { data: user } = useGetIdentity();
   const { refineCore: { onFinish, formLoading }, register, handleSubmit } = useForm();
   
   const onFinishHandler = async (data: FieldValues) => {
     
-    await onFinish({ ...data, email: user?.email })
+    await onFinish(data)
   };
 
   return (

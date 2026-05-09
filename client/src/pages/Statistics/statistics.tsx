@@ -2,7 +2,6 @@ import { SetStateAction, useEffect, useMemo, useState } from "react";
 import { Box, Stack, Typography, Card, CardContent, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
-import { useGetIdentity } from "@pankod/refine-core";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import GroupsIcon from "@mui/icons-material/Groups";
 import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
@@ -14,6 +13,7 @@ import StatisticCard from "components/charts/StatisticCard";
 import ReactApexChart from "react-apexcharts";
 import { Theme, useMediaQuery, useTheme } from "@pankod/refine-mui";
 import { API_BASE_URL } from "utils/api";
+import { getAuthHeaders } from "utils/auth";
 interface WeeklyIncomeData {
   weeklyIncome: number;
   weeklyHours: number;
@@ -68,7 +68,6 @@ const TrendMetric = ({
 );
 
 const Statistics = () => {
-  const { data: user } = useGetIdentity();
   const [subjectDistribution, setSubjectDistribution] = useState([]);
   const [yearGroupDistribution, setYearGroupDistribution] = useState([]);
   const [weeklyIncomes, setWeeklyIncomes] = useState<WeeklyIncomeData[]>([]);
@@ -112,7 +111,9 @@ const Statistics = () => {
         }
       ) => {
         try {
-          const response = await axios.get(url);
+          const response = await axios.get(url, {
+            headers: getAuthHeaders(),
+          });
           const sortedData = sortingFn
             ? response.data.sort(sortingFn)
             : response.data;
@@ -154,10 +155,9 @@ const Statistics = () => {
 
       const fetchAndAggregateData = async () => {
         try {
-          const query = user?.email
-            ? `?email=${encodeURIComponent(user.email)}`
-            : "";
-          const earningsResponse = await axios.get(`${baseURL}/earnings${query}`);
+          const earningsResponse = await axios.get(`${baseURL}/earnings`, {
+            headers: getAuthHeaders(),
+          });
           const aggregatedData = aggregateWeeklyData(earningsResponse.data);
           setWeeklyIncomes(aggregatedData);
         } catch (error) {
@@ -183,7 +183,7 @@ const Statistics = () => {
     };
 
     fetchAllData();
-  }, [user?.email]);
+  }, []);
 
   const theme = useTheme();
   const isWidthLessThanLg = useMediaQuery(theme.breakpoints.down("lg"));

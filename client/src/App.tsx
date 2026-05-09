@@ -16,7 +16,6 @@ import axios, { AxiosRequestConfig } from "axios";
 import { Title, Sider, Layout, Header } from "components/layout";
 import { ColorModeContextProvider } from "contexts";
 import { CredentialResponse } from "interfaces/google";
-import { parseJwt } from "utils/parse-jwt";
 import { Login, Home } from "pages";
 import AllStudents from "pages/Students/all-students";
 import StudentDetails from "pages/Students/student-details";
@@ -47,37 +46,25 @@ function App() {
 
   const authProvider: AuthProvider = {
     login: async ({ credential }: CredentialResponse) => {
-      const profileObj = credential ? parseJwt(credential) : null;
-
-      if (profileObj && profileObj.email) {
-        // Fetch the list of users from the server
-        const response = await fetch(
-          `${baseURL}/users`
-        );
-        const users = await response.json();
-
-        // Check if the user with the given email exists in the list
-        const userExists = users.some(
-          (user: { email: string; }) => user.email === profileObj.email
-        );
-        if (!userExists) {
-          // User does not exist in the database, reject the login attempt
-          return Promise.reject("User not found.");
-        }
-
-        // User exists, store necessary information in local storage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...profileObj,
-            avatar: profileObj.picture,
-          })
-        );
-        localStorage.setItem("token", `${credential}`);
-      } else {
-        // No profile object found or no email provided, reject the login attempt
+      if (!credential) {
         return Promise.reject("Invalid credential.");
       }
+
+      const response = await fetch(`${baseURL}/auth/google`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential }),
+      });
+
+      if (!response.ok) {
+        return Promise.reject("Google sign-in failed.");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       return Promise.resolve();
     },
@@ -88,9 +75,6 @@ function App() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         axios.defaults.headers.common = {};
-        window.google?.accounts.id.revoke(token, () => {
-          return Promise.resolve();
-        });
       }
 
       return Promise.resolve();
@@ -121,7 +105,8 @@ function App() {
       <RefineSnackbarProvider>
         <Refine
           dataProvider={dataProvider(
-            `${baseURL}`
+            `${baseURL}`,
+            axiosInstance
           )}
           notificationProvider={notificationProvider}
           ReadyPage={ReadyPage}

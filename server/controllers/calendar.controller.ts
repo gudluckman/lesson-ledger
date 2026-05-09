@@ -27,8 +27,13 @@ const jwtClient = new google.auth.JWT({
 const calendar = google.calendar({ version: "v3", auth: jwtClient });
 
 // Function to fetch weekly events from Google Calendar
-const fetchWeeklyEvents = async (_req: Request, res: Response) => {
+const fetchWeeklyEvents = async (req: Request, res: Response) => {
   try {
+    const calendarId = req.user?.calendarId;
+    if (!calendarId) {
+      return res.json([]);
+    }
+
     const today = new Date();
     const isSunday = today.getDay() === 0;
     let startOfWeek;
@@ -57,7 +62,7 @@ const fetchWeeklyEvents = async (_req: Request, res: Response) => {
     );
 
     const response = await calendar.events.list({
-      calendarId: process.env.CALENDAR_ID,
+      calendarId,
       timeMin: startOfWeek.toISOString(),
       timeMax: endOfWeek.toISOString(),
       maxResults: 50,
@@ -77,8 +82,13 @@ const fetchWeeklyEvents = async (_req: Request, res: Response) => {
   }
 };
 
-const fetchNextWeeklyEvents = async (_req: Request, res: Response) => {
+const fetchNextWeeklyEvents = async (req: Request, res: Response) => {
   try {
+    const calendarId = req.user?.calendarId;
+    if (!calendarId) {
+      return res.json([]);
+    }
+
     const today = new Date();
     const isSunday = today.getDay() === 0;
     let startOfNextWeek;
@@ -107,7 +117,7 @@ const fetchNextWeeklyEvents = async (_req: Request, res: Response) => {
     );
 
     const response = await calendar.events.list({
-      calendarId: process.env.CALENDAR_ID,
+      calendarId,
       timeMin: startOfNextWeek.toISOString(),
       timeMax: endOfNextWeek.toISOString(),
       maxResults: 50,

@@ -1,6 +1,10 @@
 import { ParsedQs } from "qs";
 
-type QueryValue = string | string[] | ParsedQs | ParsedQs[] | undefined;
+type QueryValue =
+  | string
+  | ParsedQs
+  | Array<string | ParsedQs>
+  | undefined;
 
 const getQueryString = (value: QueryValue) =>
   typeof value === "string" ? value : undefined;

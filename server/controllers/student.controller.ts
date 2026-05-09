@@ -22,19 +22,24 @@ const getAllStudents = async (req: Request, res: Response) => {
   const sortOrder = getQueryString(_order);
   const limit = getQueryNumber(_end);
   const skip = getQueryNumber(_start);
+  const subjectSearch = getQueryString(subject_like);
+  const yearFilter = getQueryString(year);
 
   const query: FilterQuery<IStudent> = {};
 
-  if (year !== "") {
-    query.year = year;
+  if (yearFilter) {
+    query.year = yearFilter;
   }
 
   // Search by subject
-  if (subject_like) {
-    query.subject = { $regex: subject_like, $options: "i" };
+  if (subjectSearch) {
+    query.subject = { $regex: subjectSearch, $options: "i" };
   }
 
   try {
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
+    query.tutor = req.user._id;
+
     const count = await Student.countDocuments(query);
 
     let studentsQuery = Student.find(query);
@@ -57,9 +62,11 @@ const getAllStudents = async (req: Request, res: Response) => {
   }
 };
 
-const getSubjectYearStatistics = async (_req: Request, res: Response) => {
+const getSubjectYearStatistics = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
     const subjects = await Student.aggregate([
+      { $match: { tutor: req.user._id } },
       {
         $group: {
           _id: { subject: "$subject", year: "$year" },
@@ -74,9 +81,11 @@ const getSubjectYearStatistics = async (_req: Request, res: Response) => {
   }
 }
 
-const getSubjectDistribution = async (_req: Request, res: Response) => {
+const getSubjectDistribution = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
     const subjects = await Student.aggregate([
+      { $match: { tutor: req.user._id } },
       {
         $group: {
           _id: {
@@ -97,9 +106,11 @@ const getSubjectDistribution = async (_req: Request, res: Response) => {
   }
 };
 
-const getYearGroupDistribution = async (_req: Request, res: Response) => {
+const getYearGroupDistribution = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
     const years = await Student.aggregate([
+      { $match: { tutor: req.user._id } },
       {
         $group: {
           _id: "$year",
@@ -116,7 +127,8 @@ const getYearGroupDistribution = async (_req: Request, res: Response) => {
 
 const getStudentDetail = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const studentExist = await Student.findOne({ _id: id }).populate("tutor");
+  if (!req.user) return res.status(401).json({ message: "Authentication required" });
+  const studentExist = await Student.findOne({ _id: id, tutor: req.user._id }).populate("tutor");
 
   if (studentExist) {
     res.status(200).json(studentExist);
@@ -146,12 +158,13 @@ const createStudent = async (req: Request, res: Response) => {
       sessionMode,
       contactNumber,
       source,
-      email,
     } = req.body;
 
     session.startTransaction();
 
-    const user = await User.findOne({ email }).session(session);
+    if (!req.user) throw new Error("Authentication required");
+
+    const user = await User.findById(req.user._id).session(session);
 
     if (!user) throw new Error("User not found");
 
@@ -199,6 +212,7 @@ const createStudent = async (req: Request, res: Response) => {
 const updateStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    if (!req.user) return res.status(401).json({ message: "Authentication required" });
     const {
       studentName,
       parentName,
@@ -218,8 +232,8 @@ const updateStudent = async (req: Request, res: Response) => {
       source,
     } = req.body;
 
-    await Student.findByIdAndUpdate(
-      { _id: id },
+    const updatedStudent = await Student.findOneAndUpdate(
+      { _id: id, tutor: req.user._id },
       {
         studentName,
         parentName,
@@ -240,6 +254,10 @@ const updateStudent = async (req: Request, res: Response) => {
       }
     );
 
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
     res.status(200).json({ message: "Student updated successfully" });
   } catch (error) {
     res.status(500).json({ message: getErrorMessage(error) });
@@ -251,8 +269,9 @@ const deleteStudent = async (req: Request, res: Response) => {
 
   try {
     const { id } = req.params;
+    if (!req.user) throw new Error("Authentication required");
 
-    const studentToDelete = await Student.findById({ _id: id }).populate<{ tutor: IUser }>(
+    const studentToDelete = await Student.findOne({ _id: id, tutor: req.user._id }).populate<{ tutor: IUser }>(
       "tutor"
     ) as PopulatedTutor | null;
 
@@ -260,7 +279,7 @@ const deleteStudent = async (req: Request, res: Response) => {
 
     session.startTransaction();
 
-    await Student.deleteOne({ _id: id }).session(session);
+    await Student.deleteOne({ _id: id, tutor: req.user._id }).session(session);
     studentToDelete.tutor.allStudents.pull(studentToDelete._id);
 
     await studentToDelete.tutor.save({ session });

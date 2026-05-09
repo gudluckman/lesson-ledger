@@ -28,6 +28,8 @@ const YearlyEarningSchema = new mongoose.Schema<IYearlyEarning>({
     tutor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
+YearlyEarningSchema.index({ tutor: 1, year: 1 });
+
 // Create the YearlyEarning model based on the YearlyEarningSchema
 const YearlyEarning = mongoose.model<IYearlyEarning>("YearlyEarning", YearlyEarningSchema);
 

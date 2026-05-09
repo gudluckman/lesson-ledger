@@ -18,6 +18,7 @@ import PaidIcon from "@mui/icons-material/Paid";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import { API_BASE_URL } from "utils/api";
+import { getAuthHeaders } from "utils/auth";
 
 const LessonSchedule: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
@@ -30,7 +31,9 @@ const LessonSchedule: React.FC = () => {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await axios.get(`${baseURL}/lessons/events`);
+      const response = await axios.get(`${baseURL}/lessons/events`, {
+        headers: getAuthHeaders(),
+      });
       setEvents(response.data);
       setLoading(false);
     } catch (error) {

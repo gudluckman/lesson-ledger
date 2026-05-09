@@ -1,5 +1,4 @@
 import YearlyEarning from "../mongodb/models/yearly_earning";
-import User from "../mongodb/models/user";
 import { Request, Response } from "express";
 import { getErrorMessage } from "../utils/error";
 import { getQueryNumber, getQueryString } from "../utils/query";
@@ -12,12 +11,8 @@ const getYearlyEarning = async (req: Request, res: Response) => {
     const skip = getQueryNumber(_start);
 
     try {
-        let query = {};
-        const email = getQueryString(req.query.email);
-        if (email) {
-            const user = await User.findOne({ email }).select("_id");
-            query = user ? { tutor: user._id } : { tutor: null };
-        }
+        if (!req.user) return res.status(401).json({ message: "Authentication required" });
+        const query = { tutor: req.user._id };
 
         const count = await YearlyEarning.countDocuments(query);
         let yearlyEarningsQuery = YearlyEarning.find(query);

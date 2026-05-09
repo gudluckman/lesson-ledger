@@ -1,6 +1,5 @@
 import ReactApexChart from "react-apexcharts";
 import { Box, Typography, Stack } from "@pankod/refine-mui";
-import { useGetIdentity } from "@pankod/refine-core";
 import { ApexOptions } from "apexcharts";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import { TotalRevenueOptions, TotalRevenueSeries } from "./chart.config";
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "utils/api";
 import { EarningProps } from "interfaces/earning";
+import { getAuthHeaders } from "utils/auth";
 
 const MONTHS = [
   "Jan",
@@ -36,7 +36,6 @@ type YearlyRevenue = {
 };
 
 const TotalRevenue = () => {
-  const { data: user } = useGetIdentity();
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [series, setSeries] = useState(TotalRevenueSeries);
   const [chartOptions, setChartOptions] =
@@ -50,10 +49,9 @@ const TotalRevenue = () => {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const query = user?.email
-          ? `?email=${encodeURIComponent(user.email)}`
-          : "";
-        const response = await fetch(`${baseURL}/earnings${query}`);
+        const response = await fetch(`${baseURL}/earnings`, {
+          headers: getAuthHeaders(),
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch earnings");
         }
@@ -130,7 +128,7 @@ const TotalRevenue = () => {
     };
 
     fetchEarnings();
-  }, [baseURL, user?.email]);
+  }, [baseURL]);
 
   const selectedYearRevenue = selectedYear ? yearlyRevenue[selectedYear] : null;
   const selectedMonthlyTotals =

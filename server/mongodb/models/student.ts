@@ -42,6 +42,10 @@ const StudentSchema = new mongoose.Schema({
   tutor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
+StudentSchema.index({ tutor: 1 });
+StudentSchema.index({ tutor: 1, year: 1 });
+StudentSchema.index({ tutor: 1, subject: 1 });
+
 const studentModel = mongoose.model<IStudent>('Student', StudentSchema);
 
 export default studentModel;

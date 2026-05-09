@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useGetIdentity } from "@pankod/refine-core";
 import { useNavigate } from "@pankod/refine-react-router-v6";
 import { Helmet } from "react-helmet";
 import { styled } from "@mui/system";
@@ -22,6 +21,7 @@ import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
 import { EarningProps } from "../../interfaces/earning";
 import { API_BASE_URL } from "utils/api";
+import { getAuthHeaders } from "utils/auth";
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
@@ -30,7 +30,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const AllEarnings: React.FC = () => {
   const navigate = useNavigate();
-  const { data: user } = useGetIdentity();
   const [allEarnings, setAllEarnings] = useState<EarningProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,12 +39,9 @@ const AllEarnings: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const query = user?.email
-          ? `?email=${encodeURIComponent(user.email)}`
-          : "";
-        const response = await axios.get(
-          `${baseURL}/earnings${query}`
-        );
+        const response = await axios.get(`${baseURL}/earnings`, {
+          headers: getAuthHeaders(),
+        });
         setAllEarnings(response.data);
         setLoading(false);
       } catch (error) {
@@ -55,11 +51,13 @@ const AllEarnings: React.FC = () => {
     };
 
     fetchData();
-  }, [baseURL, user?.email]);
+  }, [baseURL]);
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`${baseURL}/earnings/${id}`);
+      await axios.delete(`${baseURL}/earnings/${id}`, {
+        headers: getAuthHeaders(),
+      });
       setAllEarnings(allEarnings.filter((earning) => earning._id !== id));
     } catch (error) {
       console.error("Error deleting earning:", error);
