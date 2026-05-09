@@ -65,6 +65,7 @@ switch by changing env values, without editing `calendar.controller.js`.
 ## Server TypeScript Commands
 
 The backend is written in TypeScript and compiles to `server/dist`.
+Use Node.js `24.x` locally and in Vercel project settings.
 
 ```bash
 cd server

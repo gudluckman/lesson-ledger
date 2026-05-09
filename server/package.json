@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "nodemon --watch . --ext ts --ignore dist --exec \"npm run build && node dist/index.js\"",
