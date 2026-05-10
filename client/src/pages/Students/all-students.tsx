@@ -30,13 +30,6 @@ const AllStudents = () => {
   } = useTable();
 
   const allStudents = data?.data ?? [];
-  const activeStudents = allStudents.filter(
-    (student) => student.status === "Active"
-  ).length;
-  const averageRate = allStudents.length
-    ? allStudents.reduce((sum, student) => sum + Number(student.baseRate), 0) /
-      allStudents.length
-    : 0;
 
   const currentBaseRate = sorter.find(
     (item) => item.field === "baseRate"
