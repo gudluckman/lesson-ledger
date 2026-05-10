@@ -30,6 +30,13 @@ const AllStudents = () => {
   } = useTable();
 
   const allStudents = data?.data ?? [];
+  const activeStudents = allStudents.filter(
+    (student) => student.status === "Active"
+  ).length;
+  const averageRate = allStudents.length
+    ? allStudents.reduce((sum, student) => sum + Number(student.baseRate), 0) /
+      allStudents.length
+    : 0;
 
   const currentBaseRate = sorter.find(
     (item) => item.field === "baseRate"
@@ -64,6 +71,7 @@ const AllStudents = () => {
           <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142d">
             {!allStudents.length ? "There are no students" : "All Students"}
           </Typography>
+          {/* stats moved to header row next to Add Student */}
           <Box
             mb={2}
             mt={3}

@@ -12,6 +12,30 @@ import { FormPropsStudent } from "interfaces/common";
 import CustomButton from "./CustomButton";
 import CancelButton from "./CancelButton";
 
+const formatDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const getCurrentWeekDates = () => {
+  const today = new Date();
+  const day = today.getDay();
+  const daysFromMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(today);
+  const sunday = new Date(today);
+
+  monday.setDate(today.getDate() + daysFromMonday);
+  sunday.setDate(monday.getDate() + 6);
+
+  return {
+    monday: formatDateInputValue(monday),
+    sunday: formatDateInputValue(sunday),
+  };
+};
+
 const FormEarning = ({
   type,
   register,
@@ -20,6 +44,11 @@ const FormEarning = ({
   onFinishHandler,
 }: FormPropsStudent) => {
   const navigate = useNavigate();
+  const currentWeekDates = getCurrentWeekDates();
+  const defaultStartDate =
+    localStorage.getItem("currentWeekStartDate") || currentWeekDates.monday;
+  const defaultEndDate =
+    localStorage.getItem("currentWeekEndDate") || currentWeekDates.sunday;
   
   const handleCancel = () => {
     navigate(-1);
@@ -61,7 +90,7 @@ const FormEarning = ({
                 type="date"
                 variant="outlined"
                 {...register("startDateOfWeek", { required: true })}
-                defaultValue={localStorage.getItem("currentWeekStartDate") ?? ""}
+                defaultValue={defaultStartDate}
               />
             </FormControl>
             <FormControl>
@@ -77,7 +106,7 @@ const FormEarning = ({
               </FormHelperText>
               <TextField
                 {...register("endDateOfWeek", { required: true })}
-                defaultValue={localStorage.getItem("currentWeekEndDate") ?? ""}
+                defaultValue={defaultEndDate}
                 fullWidth
                 required
                 color="info"

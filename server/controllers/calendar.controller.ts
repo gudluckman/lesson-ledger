@@ -1,12 +1,69 @@
-import { google } from "googleapis";
+import { calendar_v3, google } from "googleapis";
 import { Request, Response } from "express";
+import LessonPayment from "../mongodb/models/lesson_payment";
+
+const calendarScopes = ["https://www.googleapis.com/auth/calendar.readonly"];
+
+const normalizePrivateKey = (privateKey?: string) => {
+  if (!privateKey) {
+    return undefined;
+  }
+
+  return privateKey
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\\n/g, "\n");
+};
+
+const parseServiceAccountJson = (credentials?: string) => {
+  if (!credentials) {
+    return undefined;
+  }
+
+  const normalizedCredentials = credentials.trim();
+  const json = normalizedCredentials.startsWith("{")
+    ? normalizedCredentials
+    : Buffer.from(normalizedCredentials, "base64").toString("utf8");
+
+  const parsed = JSON.parse(json) as {
+    client_email?: string;
+    private_key?: string;
+  };
+
+  if (!parsed.client_email || !parsed.private_key) {
+    throw new Error(
+      "Google service account JSON must include client_email and private_key"
+    );
+  }
+
+  return {
+    email: parsed.client_email,
+    key: normalizePrivateKey(parsed.private_key),
+  };
+};
 
 const getGoogleCalendarAuthConfig = () => {
-  const privateKey = process.env.PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const serviceAccountCredentials =
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON ||
+    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64 ||
+    process.env.GOOGLE_CREDENTIALS_BASE64;
+  const serviceAccountConfig = parseServiceAccountJson(
+    serviceAccountCredentials
+  );
 
-  if (privateKey && process.env.CLIENT_EMAIL) {
+  if (serviceAccountConfig) {
+    return serviceAccountConfig;
+  }
+
+  const privateKey = normalizePrivateKey(
+    process.env.PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY
+  );
+  const clientEmail =
+    process.env.CLIENT_EMAIL || process.env.GOOGLE_CLIENT_EMAIL;
+
+  if (privateKey && clientEmail) {
     return {
-      email: process.env.CLIENT_EMAIL,
+      email: clientEmail,
       key: privateKey,
     };
   }
@@ -17,62 +74,103 @@ const getGoogleCalendarAuthConfig = () => {
   };
 };
 
-// Authenticate using the service account credentials
-const jwtClient = new google.auth.JWT({
-  ...getGoogleCalendarAuthConfig(),
-  scopes: ["https://www.googleapis.com/auth/calendar"],
-});
+const getCalendarClient = () => {
+  const jwtClient = new google.auth.JWT({
+    ...getGoogleCalendarAuthConfig(),
+    scopes: calendarScopes,
+  });
 
-// Initialize Google Calendar API
-const calendar = google.calendar({ version: "v3", auth: jwtClient });
+  return google.calendar({ version: "v3", auth: jwtClient });
+};
 
-// Function to fetch weekly events from Google Calendar
-const fetchWeeklyEvents = async (req: Request, res: Response) => {
+const getRequestCalendarId = (req: Request) => req.user?.calendarId?.trim();
+
+const lessonPricePattern = /^\s*\$\d+(?:\.\d{1,2})?\b/;
+
+const getLessonEvents = (events: calendar_v3.Schema$Event[] = []) =>
+  events.filter(
+    (event) =>
+      event.id &&
+      event.start?.dateTime &&
+      event.end?.dateTime &&
+      lessonPricePattern.test(event.description ?? "")
+  );
+
+const withPaymentStatus = async (
+  req: Request,
+  events: calendar_v3.Schema$Event[]
+) => {
+  if (!req.user || events.length === 0) {
+    return events;
+  }
+
+  const eventIds = events
+    .map((event) => event.id)
+    .filter((eventId): eventId is string => Boolean(eventId));
+  const lessonPayments = await LessonPayment.find({
+    tutor: req.user._id,
+    googleEventId: { $in: eventIds },
+  });
+  const paidEventIds = new Set(
+    lessonPayments
+      .filter((lessonPayment) => lessonPayment.paid)
+      .map((lessonPayment) => lessonPayment.googleEventId)
+  );
+
+  return events.map((event) => ({
+    ...event,
+    paid: event.id ? paidEventIds.has(event.id) : false,
+  }));
+};
+
+const getWeekRange = (offsetWeeks = 0) => {
+  const today = new Date();
+  const day = today.getDay();
+  const daysFromMonday = day === 0 ? -6 : 1 - day;
+  const startOfWeek = new Date(today);
+
+  startOfWeek.setDate(today.getDate() + daysFromMonday + offsetWeeks * 7);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  return { startOfWeek, endOfWeek };
+};
+
+const fetchEventsForWeek = async (
+  req: Request,
+  res: Response,
+  offsetWeeks = 0
+) => {
   try {
-    const calendarId = req.user?.calendarId;
+    const calendarId = getRequestCalendarId(req);
     if (!calendarId) {
       return res.json([]);
     }
 
-    const today = new Date();
-    const isSunday = today.getDay() === 0;
-    let startOfWeek;
-    let endOfWeek;
-
-    if (isSunday) {
-      startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - 6);
-      startOfWeek.setHours(0, 0, 0, 0);
-      endOfWeek = new Date(today);
-      endOfWeek.setHours(23, 59, 59, 999);
-    } else {
-      startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Go back to Monday of the current week
-      startOfWeek.setHours(0, 0, 0, 0); // Set to 00:00:00
-      endOfWeek = new Date(today);
-      endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Go forward to Sunday of the current week
-      endOfWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
-    }
+    const { startOfWeek, endOfWeek } = getWeekRange(offsetWeeks);
 
     console.log(
-      `Start of the week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
+      `Start of requested week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
     );
     console.log(
-      `End of the week: ${endOfWeek.toDateString()} ${endOfWeek.toTimeString()}`
+      `End of requested week: ${endOfWeek.toDateString()} ${endOfWeek.toTimeString()}`
     );
 
-    const response = await calendar.events.list({
+    const response = await getCalendarClient().events.list({
       calendarId,
       timeMin: startOfWeek.toISOString(),
       timeMax: endOfWeek.toISOString(),
       maxResults: 50,
       singleEvents: true,
       orderBy: "startTime",
-      fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
+      fields: "items(id,summary,start,end,hangoutLink,description)",
     });
 
-    const events = (response.data.items ?? []).filter(
-      (event) => event.colorId === "1" || event.colorId === "9"
+    const events = await withPaymentStatus(
+      req,
+      getLessonEvents(response.data.items)
     );
 
     res.json(events);
@@ -81,60 +179,58 @@ const fetchWeeklyEvents = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+const fetchWeeklyEvents = async (req: Request, res: Response) =>
+  fetchEventsForWeek(req, res);
+
+const fetchPreviousWeeklyEvents = async (req: Request, res: Response) =>
+  fetchEventsForWeek(req, res, -1);
 
 const fetchNextWeeklyEvents = async (req: Request, res: Response) => {
+  fetchEventsForWeek(req, res, 1);
+};
+
+const updateLessonPayment = async (req: Request, res: Response) => {
   try {
-    const calendarId = req.user?.calendarId;
-    if (!calendarId) {
-      return res.json([]);
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
     }
 
-    const today = new Date();
-    const isSunday = today.getDay() === 0;
-    let startOfNextWeek;
-    let endOfNextWeek;
+    const { eventId } = req.params;
+    const { paid } = req.body;
 
-    if (isSunday) {
-      startOfNextWeek = new Date(today);
-      startOfNextWeek.setDate(today.getDate() - 6);
-      startOfNextWeek.setHours(0, 0, 0, 0);
-      endOfNextWeek = new Date(today);
-      endOfNextWeek.setHours(23, 59, 59, 999);
-    } else {
-      startOfNextWeek = new Date(today);
-      startOfNextWeek.setDate(today.getDate() - today.getDay() + 8); // Go back to Monday of the next week
-      startOfNextWeek.setHours(0, 0, 0, 0); // Set to 00:00:00
-      endOfNextWeek = new Date(today);
-      endOfNextWeek.setDate(today.getDate() + (14 - today.getDay())); // Go forward to Sunday of the next week
-      endOfNextWeek.setHours(23, 59, 59, 999); // Set to 23:59:59
+    if (!eventId) {
+      return res.status(400).json({ message: "Google event id is required" });
     }
 
-    console.log(
-      `Start of the next week: ${startOfNextWeek.toDateString()} ${startOfNextWeek.toTimeString()}`
-    );
-    console.log(
-      `End of the next week: ${endOfNextWeek.toDateString()} ${endOfNextWeek.toTimeString()}`
+    const lessonPayment = await LessonPayment.findOneAndUpdate(
+      {
+        tutor: req.user._id,
+        googleEventId: eventId,
+      },
+      {
+        paid: Boolean(paid),
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
     );
 
-    const response = await calendar.events.list({
-      calendarId,
-      timeMin: startOfNextWeek.toISOString(),
-      timeMax: endOfNextWeek.toISOString(),
-      maxResults: 50,
-      singleEvents: true,
-      orderBy: "startTime",
-      fields: "items(colorId,summary,start,end,hangoutLink,description,attachments)",
+    res.status(200).json({
+      googleEventId: lessonPayment.googleEventId,
+      paid: lessonPayment.paid,
     });
-
-    const events = (response.data.items ?? []).filter(
-      (event) => event.colorId === "1" || event.colorId === "9"
-    );
-
-    res.json(events);
   } catch (error) {
-    console.error("Error fetching events:", error);
+    console.error("Error updating lesson payment:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-export { fetchWeeklyEvents, fetchNextWeeklyEvents };
+export {
+  fetchNextWeeklyEvents,
+  fetchPreviousWeeklyEvents,
+  fetchWeeklyEvents,
+  updateLessonPayment,
+};

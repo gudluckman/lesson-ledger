@@ -53,32 +53,30 @@ Private API routes use that JWT to scope students, earnings, yearly earnings,
 and statistics to the signed-in user. The frontend should not send ownership
 with `?email=...` or request bodies.
 
-For Google Calendar service account auth, choose one of these styles.
+Google Calendar sync uses a Google service account. Users share their Google
+Calendar with the service account email shown in the Lesson Schedule setup modal,
+grant `See all event details`, then save that calendar's id in Lesson Ledger.
 
 Production/env style:
 
 ```bash
 CLIENT_EMAIL=your-service-account@project.iam.gserviceaccount.com
 PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-CALENDAR_ID=your-calendar-id
 ```
 
 Local file style:
 
 ```bash
 GOOGLE_APPLICATION_CREDENTIALS=./service_account.json
-CALENDAR_ID=your-calendar-id
 ```
 
 When `CLIENT_EMAIL` and `PRIVATE_KEY` are present, the server uses them. If they
 are not present, it falls back to `GOOGLE_APPLICATION_CREDENTIALS`, then
-`./service_account.json`. This means local and production environments can
-switch by changing env values, without editing `calendar.controller.js`.
+`./service_account.json`.
 
-Calendar data is user-scoped. A user must have a `calendarId` saved on their
-user record before `/lessons/events` returns Google Calendar events. Without a
-calendar id, the API returns an empty schedule instead of falling back to another
-user's calendar. Calendar ids can be saved with `PATCH /api/v1/auth/me`.
+Only lesson events are returned from `/lessons/events`: the event must have a
+start and end time, and its description must begin with a price such as `$80` or
+`$120.50`.
 
 ## Server TypeScript Commands
 

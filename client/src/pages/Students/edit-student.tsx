@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import FormStudent from 'components/common/FormStudent';
 
 const CreateStudent = () => {
-  const { refineCore: { onFinish, formLoading }, register, handleSubmit } = useForm();
+  const { refineCore: { onFinish, formLoading }, register, watch, handleSubmit } = useForm();
   
   const onFinishHandler = async (data: FieldValues) => {
     
@@ -18,6 +18,7 @@ const CreateStudent = () => {
       <FormStudent 
       type="Edit"
       register={register}
+      watch={watch}
       onFinish={onFinish}
       formLoading={formLoading}
       handleSubmit={handleSubmit}

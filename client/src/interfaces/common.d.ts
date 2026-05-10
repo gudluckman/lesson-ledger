@@ -20,6 +20,7 @@ export interface ProfileProps {
 export interface FormPropsStudent {
     type: string,
     register: any,
+    watch?: any,
     onFinish: (values: FieldValues) => Promise<void | CreateResponse<BaseRecord> | UpdateResponse<BaseRecord>>,
     formLoading: boolean,
     handleSubmit: FormEventHandler<HTMLFormElement> | undefined,

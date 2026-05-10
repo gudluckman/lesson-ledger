@@ -1,13 +1,11 @@
 import Student from "../mongodb/models/student";
-import User, { IUser } from "../mongodb/models/user";
+import User from "../mongodb/models/user";
 
 import mongoose, { FilterQuery } from "mongoose";
 import { Request, Response } from "express";
 import { getErrorMessage } from "../utils/error";
 import { IStudent } from "../mongodb/models/student";
 import { getQueryNumber, getQueryString } from "../utils/query";
-
-type PopulatedTutor = Omit<IStudent, "tutor"> & { tutor: IUser };
 
 const getAllStudents = async (req: Request, res: Response) => {
   const {
@@ -128,6 +126,10 @@ const getYearGroupDistribution = async (req: Request, res: Response) => {
 const getStudentDetail = async (req: Request, res: Response) => {
   const { id } = req.params;
   if (!req.user) return res.status(401).json({ message: "Authentication required" });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid student id" });
+  }
+
   const studentExist = await Student.findOne({ _id: id, tutor: req.user._id }).populate("tutor");
 
   if (studentExist) {
@@ -213,45 +215,50 @@ const updateStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!req.user) return res.status(401).json({ message: "Authentication required" });
-    const {
-      studentName,
-      parentName,
-      gender,
-      year,
-      subject,
-      baseRate,
-      sessionHoursPerWeek,
-      day,
-      startTime,
-      endTime,
-      delivery,
-      status,
-      sessionType,
-      sessionMode,
-      contactNumber,
-      source,
-    } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid student id" });
+    }
+
+    const allowedFields = [
+      "studentName",
+      "parentName",
+      "gender",
+      "year",
+      "subject",
+      "baseRate",
+      "sessionHoursPerWeek",
+      "day",
+      "startTime",
+      "endTime",
+      "delivery",
+      "status",
+      "sessionType",
+      "sessionMode",
+      "contactNumber",
+      "source",
+    ];
+
+    const updates = allowedFields.reduce<Record<string, unknown>>((result, field) => {
+      const value = req.body[field];
+      if (value !== undefined && value !== null && value !== "") {
+        result[field] = value;
+      }
+      return result;
+    }, {});
+
+    if (!Object.keys(updates).length) {
+      const studentExists = await Student.exists({ _id: id, tutor: req.user._id });
+      if (!studentExists) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      return res.status(200).json({ message: "Student updated successfully" });
+    }
 
     const updatedStudent = await Student.findOneAndUpdate(
       { _id: id, tutor: req.user._id },
-      {
-        studentName,
-        parentName,
-        gender,
-        year,
-        subject,
-        baseRate,
-        sessionHoursPerWeek,
-        day,
-        startTime,
-        endTime,
-        delivery,
-        status,
-        sessionType,
-        sessionMode,
-        contactNumber,
-        source,
-      }
+      { $set: updates },
+      { new: true, runValidators: true }
     );
 
     if (!updatedStudent) {
@@ -265,34 +272,33 @@ const updateStudent = async (req: Request, res: Response) => {
 };
 
 const deleteStudent = async (req: Request, res: Response) => {
-  const session = await mongoose.startSession();
-
   try {
     const { id } = req.params;
-    if (!req.user) throw new Error("Authentication required");
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    const studentToDelete = await Student.findOne({ _id: id, tutor: req.user._id }).populate<{ tutor: IUser }>(
-      "tutor"
-    ) as PopulatedTutor | null;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid student id" });
+    }
 
-    if (!studentToDelete) throw new Error("Student not found");
+    const studentToDelete = await Student.findOneAndDelete({
+      _id: id,
+      tutor: req.user._id,
+    });
 
-    session.startTransaction();
+    if (!studentToDelete) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
-    await Student.deleteOne({ _id: id, tutor: req.user._id }).session(session);
-    studentToDelete.tutor.allStudents.pull(studentToDelete._id);
-
-    await studentToDelete.tutor.save({ session });
-    await session.commitTransaction();
+    await User.updateOne(
+      { _id: req.user._id },
+      { $pull: { allStudents: studentToDelete._id } }
+    );
 
     res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
     res.status(500).json({ message: getErrorMessage(error) });
-  } finally {
-    session.endSession();
   }
 };
 

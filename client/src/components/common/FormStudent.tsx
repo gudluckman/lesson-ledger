@@ -21,11 +21,13 @@ import CancelButton from "./CancelButton";
 const FormStudent = ({
   type,
   register,
+  watch,
   handleSubmit,
   formLoading,
   onFinishHandler,
 }: FormPropsStudent) => {
   const navigate = useNavigate();
+  const getFieldValue = (field: string, fallback = "") => watch?.(field) ?? fallback;
   const handleCancel = () => {
     navigate(-1);
   };
@@ -127,18 +129,16 @@ const FormStudent = ({
             >
               Student gender
             </FormHelperText>
-            <RadioGroup row aria-label="studentGender" defaultValue="online">
+            <RadioGroup row aria-label="studentGender" value={getFieldValue("gender")}>
               <FormControlLabel
                 value="Male"
-                control={<Radio />}
+                control={<Radio {...register("gender", { required: true })} />}
                 label="Male"
-                {...register("gender", { required: true })}
               />
               <FormControlLabel
                 value="Female"
-                control={<Radio />}
+                control={<Radio {...register("gender", { required: true })} />}
                 label="Female"
-                {...register("gender", { required: true })}
               />
             </RadioGroup>
           </FormControl>
@@ -162,8 +162,8 @@ const FormStudent = ({
                 displayEmpty
                 required
                 inputProps={{ "aria-label": "Without label" }}
-                defaultValue="12"
                 {...register("year", { required: true })}
+                value={getFieldValue("year", "12")}
               >
                 <MenuItem value="12">Year 12 (HSC)</MenuItem>
                 <MenuItem value="11">Year 11</MenuItem>
@@ -266,18 +266,16 @@ const FormStudent = ({
               >
                 Lesson delivery
               </FormHelperText>
-              <RadioGroup row aria-label="delivery" defaultValue="online">
+              <RadioGroup row aria-label="delivery" value={getFieldValue("delivery", "Online")}>
                 <FormControlLabel
                   value="Online"
-                  control={<Radio />}
+                  control={<Radio {...register("delivery", { required: true })} />}
                   label="Online"
-                  {...register("delivery", { required: true })}
                 />
                 <FormControlLabel
                   value="In Person"
-                  control={<Radio />}
+                  control={<Radio {...register("delivery", { required: true })} />}
                   label="In Person"
-                  {...register("delivery", { required: true })}
                 />
               </RadioGroup>
             </FormControl>
@@ -294,18 +292,16 @@ const FormStudent = ({
               >
                 Session mode
               </FormHelperText>
-              <RadioGroup row aria-label="sessionMode">
+              <RadioGroup row aria-label="sessionMode" value={getFieldValue("sessionMode", "One on one")}>
                 <FormControlLabel
                   value="One on one"
-                  control={<Radio />}
+                  control={<Radio {...register("sessionMode", { required: true })} />}
                   label="One on one"
-                  {...register("sessionMode", { required: true })}
                 />
                 <FormControlLabel
                   value="Group"
-                  control={<Radio />}
+                  control={<Radio {...register("sessionMode", { required: true })} />}
                   label="Group"
-                  {...register("sessionMode", { required: true })}
                 />
               </RadioGroup>
             </FormControl>
@@ -324,18 +320,16 @@ const FormStudent = ({
               >
                 Session type
               </FormHelperText>
-              <RadioGroup row aria-label="sessionType">
+              <RadioGroup row aria-label="sessionType" value={getFieldValue("sessionType", "Weekly")}>
                 <FormControlLabel
                   value="Weekly"
-                  control={<Radio />}
+                  control={<Radio {...register("sessionType", { required: true })} />}
                   label="Weekly"
-                  {...register("sessionType", { required: true })}
                 />
                 <FormControlLabel
                   value="Casual"
-                  control={<Radio />}
+                  control={<Radio {...register("sessionType", { required: true })} />}
                   label="Casual"
-                  {...register("sessionType", { required: true })}
                 />
               </RadioGroup>
             </FormControl>
@@ -356,24 +350,22 @@ const FormStudent = ({
                 row
                 aria-labelledby="demo-radio-buttons-group-label"
                 name="use-radio-group"
+                value={getFieldValue("status", "Active")}
               >
                 <FormControlLabel
                   value="Active"
-                  control={<Radio />}
+                  control={<Radio {...register("status", { required: true })} />}
                   label="Active"
-                  {...register("status", { required: true })}
                 />
                 <FormControlLabel
                   value="Pending"
-                  control={<Radio />}
+                  control={<Radio {...register("status", { required: true })} />}
                   label="Pending"
-                  {...register("status", { required: true })}
                 />
                 <FormControlLabel
                   value="Inactive"
-                  control={<Radio />}
+                  control={<Radio {...register("status", { required: true })} />}
                   label="Inactive"
-                  {...register("status", { required: true })}
                 />
               </RadioGroup>
             </FormControl>
@@ -399,8 +391,8 @@ const FormStudent = ({
                 displayEmpty
                 required
                 inputProps={{ "aria-label": "Without label" }}
-                defaultValue="Monday"
                 {...register("day", { required: false })}
+                value={getFieldValue("day", "Monday")}
               >
                 <MenuItem value="" disabled>
                   Select Day

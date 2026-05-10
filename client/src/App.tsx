@@ -41,6 +41,18 @@ axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
   return request;
 });
 
+const clearCachedDashboardStats = () => {
+  [
+    "currentWeeklyIncomeSum",
+    "currentWeeklyHours",
+    "currentAverageHourlyRate",
+    "currentWeeklyStudents",
+    "totalRevenue",
+    "averageWeeklyIncome",
+    "averageWeeklyHours",
+  ].forEach((key) => localStorage.removeItem(key));
+};
+
 function App() {
   const baseURL = API_BASE_URL;
 
@@ -63,6 +75,7 @@ function App() {
       }
 
       const data = await response.json();
+      clearCachedDashboardStats();
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -74,6 +87,7 @@ function App() {
       if (token && typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        clearCachedDashboardStats();
         axios.defaults.headers.common = {};
       }
 

@@ -7,6 +7,7 @@ const CreateStudent = () => {
   const {
     refineCore: { onFinish, formLoading },
     register,
+    watch,
     handleSubmit,
   } = useForm();
 
@@ -22,6 +23,7 @@ const CreateStudent = () => {
       <FormStudent
         type="Create"
         register={register}
+        watch={watch}
         onFinish={onFinish}
         formLoading={formLoading}
         handleSubmit={handleSubmit}

@@ -15,6 +15,8 @@ import {
   TableContainer,
   TableRow,
   IconButton,
+  MenuItem,
+  TextField,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 import { format } from "date-fns";
@@ -33,6 +35,7 @@ const AllEarnings: React.FC = () => {
   const [allEarnings, setAllEarnings] = useState<EarningProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedYear, setSelectedYear] = useState("all");
   const pageSize = 5;
   const baseURL = API_BASE_URL;
 
@@ -64,41 +67,82 @@ const AllEarnings: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
-
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
+  const allTimeTotalEarnings = allEarnings.reduce(
+    (acc, earning) => acc + Number(earning.weeklyIncome),
+    0
+  );
+  const allTimeTotalHours = allEarnings.reduce(
+    (acc, earning) => acc + Number(earning.weeklyHours),
+    0
+  );
+  const allTimeAverageWeeklyIncome = allEarnings.length
+    ? allTimeTotalEarnings / allEarnings.length
+    : 0;
+  const allTimeAverageWeeklyHours = allEarnings.length
+    ? allTimeTotalHours / allEarnings.length
+    : 0;
+  const earningYears = Array.from(
+    new Set(
+      allEarnings
+        .map((earning) => new Date(earning.endDateOfWeek).getFullYear())
+        .filter((year) => Number.isFinite(year))
+    )
+  ).sort((a, b) => b - a);
+  const filteredEarnings =
+    selectedYear === "all"
+      ? allEarnings
+      : allEarnings.filter(
+          (earning) =>
+            new Date(earning.endDateOfWeek).getFullYear().toString() ===
+            selectedYear
+        );
   // Sort earnings by startDateOfWeek by latest earning
-  const sortedEarnings = [...allEarnings].sort(
+  const sortedEarnings = [...filteredEarnings].sort(
     (a, b) =>
       new Date(b.startDateOfWeek).getTime() -
       new Date(a.startDateOfWeek).getTime()
   );
   const earningsToShow = sortedEarnings.slice(startIndex, endIndex);
 
-  const totalEarnings = allEarnings.reduce(
+  const totalEarnings = filteredEarnings.reduce(
     (acc, earning) => acc + Number(earning.weeklyIncome),
     0
   );
-  const totalHours = allEarnings.reduce(
+  const totalHours = filteredEarnings.reduce(
     (acc, earning) => acc + Number(earning.weeklyHours),
     0
   );
-  localStorage.setItem("totalRevenue", totalEarnings.toString());
 
   // Calculate average weekly income
-  const averageWeeklyIncome = allEarnings.length
-    ? totalEarnings / allEarnings.length
-    : 0;
-  localStorage.setItem("averageWeeklyIncome", averageWeeklyIncome.toString());
-
-  const averageWeeklyHours = allEarnings.length
-    ? totalHours / allEarnings.length
-    : 0;
-  localStorage.setItem("averageWeeklyHours", averageWeeklyHours.toString());
   const averageHourlyRate = totalHours ? totalEarnings / totalHours : 0;
+  const totalPages = Math.max(Math.ceil(filteredEarnings.length / pageSize), 1);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    localStorage.setItem("totalRevenue", allTimeTotalEarnings.toString());
+    localStorage.setItem(
+      "averageWeeklyIncome",
+      allTimeAverageWeeklyIncome.toString()
+    );
+    localStorage.setItem(
+      "averageWeeklyHours",
+      allTimeAverageWeeklyHours.toString()
+    );
+  }, [
+    allTimeAverageWeeklyHours,
+    allTimeAverageWeeklyIncome,
+    allTimeTotalEarnings,
+    loading,
+  ]);
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
   return (
     <Box>
@@ -107,11 +151,41 @@ const AllEarnings: React.FC = () => {
       </Helmet>
       <Box mt="20px" sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         <Stack direction="column" width="100%">
-          <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
-            {allEarnings.length
-              ? "Earnings (All Time)"
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Typography variant="h1" fontSize="2rem" fontWeight={700} color="#11142D">
+              {allEarnings.length
+                ? selectedYear === "all"
+                  ? "Earnings"
+                  : `Earnings (${selectedYear})`
               : "There are no earnings"}
-          </Typography>
+            </Typography>
+            {allEarnings.length > 0 && (
+              <TextField
+                select
+                label="Range"
+                size="small"
+                value={selectedYear}
+                onChange={(event) => {
+                  setSelectedYear(event.target.value);
+                  setCurrentPage(1);
+                }}
+                sx={{ minWidth: 150, bgcolor: "#fcfcfc" }}
+              >
+                <MenuItem value="all">All Time</MenuItem>
+                {earningYears.map((year) => (
+                  <MenuItem key={year} value={year.toString()}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          </Stack>
           <Box mt="20px" display={"flex"} flexWrap={"wrap"} gap={4}>
             <HighlightCard
               title="Total Earnings"
@@ -253,6 +327,13 @@ const AllEarnings: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              {earningsToShow.length === 0 && (
+                <TableRow>
+                  <TableCell align="center" colSpan={5}>
+                    No earnings for this range.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -282,20 +363,22 @@ const AllEarnings: React.FC = () => {
           </button>
           {/* Page number */}
           <Typography variant="body1" style={{ margin: "0 10px" }}>
-            Page {currentPage} of {Math.ceil(allEarnings.length / pageSize)}
+            Page {currentPage} of {totalPages}
           </Typography>
           {/* Next button */}
           <button
-            disabled={endIndex >= allEarnings.length}
+            disabled={endIndex >= filteredEarnings.length}
             onClick={() => setCurrentPage(currentPage + 1)}
             style={{
               padding: "8px 16px",
               borderRadius: "5px",
               backgroundColor:
-                endIndex >= allEarnings.length ? "#ccc" : "#475be8",
+                endIndex >= filteredEarnings.length ? "#ccc" : "#475be8",
               color: "#fff",
               cursor:
-                endIndex >= allEarnings.length ? "not-allowed" : "pointer",
+                endIndex >= filteredEarnings.length
+                  ? "not-allowed"
+                  : "pointer",
               outline: "none",
               border: "none",
             }}

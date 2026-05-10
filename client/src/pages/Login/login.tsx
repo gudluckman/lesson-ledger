@@ -7,14 +7,18 @@ import { CredentialResponse } from "../../interfaces/google";
 
 export const Login: React.FC = () => {
   const { mutate: login } = useLogin<CredentialResponse>();
-  const googleClientId =
-    process.env.REACT_APP_GOOGLE_CLIENT_ID || process.env.REACT_APP_API_KEY;
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
   const GoogleButton = (): JSX.Element => {
     const divRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       if (typeof window === "undefined" || !window.google || !divRef.current) {
+        return;
+      }
+
+      if (!googleClientId) {
+        console.error("REACT_APP_GOOGLE_CLIENT_ID is required");
         return;
       }
 

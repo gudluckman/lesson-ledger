@@ -5,6 +5,16 @@ import { PieChart, TotalRevenue } from "components";
 import { SubjectCount } from "components/charts/SubjectCount";
 import StudentCard from "components/common/StudentCard";
 
+const getStoredNumber = (key: string) => {
+  const value = Number(localStorage.getItem(key));
+  return Number.isFinite(value) ? value : 0;
+};
+
+const getProgressSeries = (value: number, target: number) => [
+  Math.max(value, 0),
+  Math.max(target - value, 0),
+];
+
 const Home = () => {
   const { data, isLoading, isError } = useList({
     resource: "students",
@@ -20,12 +30,10 @@ const Home = () => {
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography>Something went wrong!</Typography>;
 
-  const currentWeeklyIncomeSum = localStorage.getItem("currentWeeklyIncomeSum");
-  const currentWeeklyHours = localStorage.getItem("currentWeeklyHours");
-  const currentAverageHourlyRate = localStorage.getItem(
-    "currentAverageHourlyRate"
-  );
-  const currentWeeklyStudents = localStorage.getItem("currentWeeklyStudents");
+  const currentWeeklyIncomeSum = getStoredNumber("currentWeeklyIncomeSum");
+  const currentWeeklyHours = getStoredNumber("currentWeeklyHours");
+  const currentAverageHourlyRate = getStoredNumber("currentAverageHourlyRate");
+  const currentWeeklyStudents = getStoredNumber("currentWeeklyStudents");
 
   // Targets for chart
   const targetWeeklyIncome = 1000;
@@ -45,40 +53,30 @@ const Home = () => {
       <Box mt="2rem" display="flex" flexWrap="wrap" gap="1rem">
         <PieChart
           title="Weekly Earning"
-          value={`$${parseFloat(currentWeeklyIncomeSum ?? "0").toString()}`}
-          series={[
-            parseFloat(currentWeeklyIncomeSum ?? "0"),
-            targetWeeklyIncome - parseFloat(currentWeeklyIncomeSum ?? "0"),
-          ]}
+          value={`$${currentWeeklyIncomeSum.toLocaleString()}`}
+          series={getProgressSeries(currentWeeklyIncomeSum, targetWeeklyIncome)}
           colors={["#275be8", "#c4e8ef"]}
         />
 
         <PieChart
           title="Weekly Hours"
-          value={currentWeeklyHours ?? "0"}
-          series={[
-            parseFloat(currentWeeklyHours ?? "0"),
-            targetWeeklyHours - parseFloat(currentWeeklyHours ?? "0"),
-          ]}
+          value={currentWeeklyHours.toString()}
+          series={getProgressSeries(currentWeeklyHours, targetWeeklyHours)}
           colors={["#275be8", "#c4e8ef"]}
         />
         <PieChart
           title="Weekly Students"
-          value={currentWeeklyStudents ?? "0"}
-          series={[
-            parseFloat(currentWeeklyStudents ?? "0"),
-            targetWeeklyStudents - parseFloat(currentWeeklyStudents ?? "0"),
-          ]}
+          value={currentWeeklyStudents.toString()}
+          series={getProgressSeries(currentWeeklyStudents, targetWeeklyStudents)}
           colors={["#275be8", "#c4e8ef"]}
         />
         <PieChart
           title="Weekly Hourly Rate"
-          value={`$${parseFloat(currentAverageHourlyRate ?? "0").toFixed(2)}`}
-          series={[
-            parseFloat(currentAverageHourlyRate ?? "0"),
-            targetAverageHourlyRate -
-              parseFloat(currentAverageHourlyRate ?? "0"),
-          ]}
+          value={`$${currentAverageHourlyRate.toFixed(2)}`}
+          series={getProgressSeries(
+            currentAverageHourlyRate,
+            targetAverageHourlyRate
+          )}
           colors={["#275be8", "#c4e8ef"]}
         />
       </Box>
@@ -107,20 +105,27 @@ const Home = () => {
         </Typography>
 
         <Box mt="1.25rem" display="flex" flexWrap="wrap" gap="1rem">
-          {latestStudents
-            .slice(-4)
-            .reverse()
-            .map((student) => (
-              <StudentCard
-                key={student._id}
-                id={student._id}
-                studentName={student.studentName}
-                year={student.year}
-                baseRate={student.baseRate}
-                subject={student.subject}
-                status={student.status}
-              />
-            ))}
+          {latestStudents.length === 0 ? (
+            <Typography fontSize={14} color="#808191">
+              No students yet. Add your first student to start building your
+              tutoring dashboard.
+            </Typography>
+          ) : (
+            latestStudents
+              .slice(-4)
+              .reverse()
+              .map((student) => (
+                <StudentCard
+                  key={student._id}
+                  id={student._id}
+                  studentName={student.studentName}
+                  year={student.year}
+                  baseRate={student.baseRate}
+                  subject={student.subject}
+                  status={student.status}
+                />
+              ))
+          )}
         </Box>
       </Box>
     </Box>
