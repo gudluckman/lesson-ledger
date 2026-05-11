@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import LessonPayment from "../mongodb/models/lesson_payment";
 
 const calendarScopes = ["https://www.googleapis.com/auth/calendar.readonly"];
+const calendarTimeZone = process.env.CALENDAR_TIME_ZONE || "Australia/Sydney";
 
 const normalizePrivateKey = (privateKey?: string) => {
   if (!privateKey) {
@@ -123,19 +124,130 @@ const withPaymentStatus = async (
   }));
 };
 
-const getWeekRange = (offsetWeeks = 0) => {
-  const today = new Date();
-  const day = today.getDay();
+const zonedFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+const getZonedFormatter = (timeZone: string) => {
+  const cachedFormatter = zonedFormatterCache.get(timeZone);
+
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+
+  zonedFormatterCache.set(timeZone, formatter);
+
+  return formatter;
+};
+
+const getZonedDateParts = (date: Date, timeZone: string) => {
+  const parts = getZonedFormatter(timeZone).formatToParts(date);
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)])
+  );
+
+  return {
+    year: values.year,
+    month: values.month,
+    day: values.day,
+    hour: values.hour,
+    minute: values.minute,
+    second: values.second,
+  };
+};
+
+const getTimeZoneOffsetMs = (date: Date, timeZone: string) => {
+  const parts = getZonedDateParts(date, timeZone);
+  const zonedTimeAsUtc = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second
+  );
+  const utcTimeWithoutMs = Math.floor(date.getTime() / 1000) * 1000;
+
+  return zonedTimeAsUtc - utcTimeWithoutMs;
+};
+
+const zonedDateTimeToUtc = (
+  date: Date,
+  timeZone: string,
+  hours: number,
+  minutes: number,
+  seconds: number,
+  milliseconds: number
+) => {
+  const wallTimeAsUtc = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    hours,
+    minutes,
+    seconds,
+    milliseconds
+  );
+  const guessedUtcTime =
+    wallTimeAsUtc - getTimeZoneOffsetMs(new Date(wallTimeAsUtc), timeZone);
+  const correctedUtcTime =
+    wallTimeAsUtc - getTimeZoneOffsetMs(new Date(guessedUtcTime), timeZone);
+
+  return new Date(correctedUtcTime);
+};
+
+const getWeekRange = (offsetWeeks = 0, now = new Date()) => {
+  const todayInCalendarTimeZone = getZonedDateParts(
+    now,
+    calendarTimeZone
+  );
+  const calendarDate = new Date(
+    Date.UTC(
+      todayInCalendarTimeZone.year,
+      todayInCalendarTimeZone.month - 1,
+      todayInCalendarTimeZone.day
+    )
+  );
+  const day = calendarDate.getUTCDay();
   const daysFromMonday = day === 0 ? -6 : 1 - day;
-  const startOfWeek = new Date(today);
+  const weekStartDate = new Date(calendarDate);
 
-  startOfWeek.setDate(today.getDate() + daysFromMonday + offsetWeeks * 7);
-  startOfWeek.setHours(0, 0, 0, 0);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
+  weekStartDate.setUTCDate(
+    calendarDate.getUTCDate() + daysFromMonday + offsetWeeks * 7
+  );
 
-  return { startOfWeek, endOfWeek };
+  const weekEndDate = new Date(weekStartDate);
+  weekEndDate.setUTCDate(weekStartDate.getUTCDate() + 6);
+
+  return {
+    startOfWeek: zonedDateTimeToUtc(
+      weekStartDate,
+      calendarTimeZone,
+      0,
+      0,
+      0,
+      0
+    ),
+    endOfWeek: zonedDateTimeToUtc(
+      weekEndDate,
+      calendarTimeZone,
+      23,
+      59,
+      59,
+      999
+    ),
+  };
 };
 
 const fetchEventsForWeek = async (
@@ -152,10 +264,10 @@ const fetchEventsForWeek = async (
     const { startOfWeek, endOfWeek } = getWeekRange(offsetWeeks);
 
     console.log(
-      `Start of requested week: ${startOfWeek.toDateString()} ${startOfWeek.toTimeString()}`
+      `Start of requested week: ${startOfWeek.toISOString()} (${calendarTimeZone})`
     );
     console.log(
-      `End of requested week: ${endOfWeek.toDateString()} ${endOfWeek.toTimeString()}`
+      `End of requested week: ${endOfWeek.toISOString()} (${calendarTimeZone})`
     );
 
     const response = await getCalendarClient().events.list({
@@ -232,5 +344,6 @@ export {
   fetchNextWeeklyEvents,
   fetchPreviousWeeklyEvents,
   fetchWeeklyEvents,
+  getWeekRange,
   updateLessonPayment,
 };
