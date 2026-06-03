@@ -18,7 +18,7 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import { Add, Delete, FileDownload } from "@mui/icons-material";
 import { format } from "date-fns";
 import HighlightCard from "components/charts/HighlightCard";
 import { EarningProps } from "../../interfaces/earning";
@@ -29,6 +29,31 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: "#989ea4",
   borderRadius: "20px",
 }));
+
+const csvHeaders = ["Start Date", "End Date", "Weekly Hours", "Weekly Income"];
+
+const escapeCsvValue = (value: string | number) => {
+  const stringValue = String(value ?? "");
+
+  if (/[",\n\r]/.test(stringValue)) {
+    return `"${stringValue.replace(/"/g, '""')}"`;
+  }
+
+  return stringValue;
+};
+
+const getEarningsCsv = (earnings: EarningProps[]) => {
+  const rows = earnings.map((earning) => [
+    format(new Date(earning.startDateOfWeek), "dd/MM/yyyy"),
+    format(new Date(earning.endDateOfWeek), "dd/MM/yyyy"),
+    earning.weeklyHours,
+    earning.weeklyIncome,
+  ]);
+
+  return [csvHeaders, ...rows]
+    .map((row) => row.map(escapeCsvValue).join(","))
+    .join("\n");
+};
 
 const AllEarnings: React.FC = () => {
   const navigate = useNavigate();
@@ -65,6 +90,25 @@ const AllEarnings: React.FC = () => {
     } catch (error) {
       console.error("Error deleting earning:", error);
     }
+  };
+
+  const handleDownloadCsv = () => {
+    const sortedAllEarnings = [...allEarnings].sort(
+      (a, b) =>
+        new Date(b.startDateOfWeek).getTime() -
+        new Date(a.startDateOfWeek).getTime()
+    );
+    const csv = getEarningsCsv(sortedAllEarnings);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `earnings-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const startIndex = (currentPage - 1) * pageSize;
@@ -207,32 +251,27 @@ const AllEarnings: React.FC = () => {
             mb={2}
             mt={3}
             display="flex"
-            width="84%"
+            width="100%"
             justifyContent="space-between"
+            alignItems="center"
+            gap={2}
             flexWrap="wrap"
           >
-            <Box
-              display="flex"
-              gap={2}
-              flexWrap="wrap"
-              mb={{ xs: "20px", sm: 0 }}
-            >
-              <Stack
-                direction="row"
-                width="100%"
-                justifyContent="space-between"
-                gap={2}
-                mt={2}
-              >
-                <CustomButton
-                  title="Add Earning"
-                  handleClick={() => navigate("/earnings/create")}
-                  backgroundColor="#7982ff"
-                  color="#fcfcfc"
-                  icon={<Add />}
-                />
-              </Stack>
-            </Box>
+            <CustomButton
+              title="Add Earning"
+              handleClick={() => navigate("/earnings/create")}
+              backgroundColor="#7982ff"
+              color="#fcfcfc"
+              icon={<Add />}
+            />
+            <CustomButton
+              title="Download CSV"
+              handleClick={handleDownloadCsv}
+              backgroundColor="#475be8"
+              color="#fcfcfc"
+              icon={<FileDownload />}
+              disabled={allEarnings.length === 0}
+            />
           </Box>
         </Stack>
       </Box>
